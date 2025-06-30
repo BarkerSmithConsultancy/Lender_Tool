@@ -347,7 +347,7 @@
         }
 
         th, td {
-            padding: 0.4rem 0.6rem;
+            padding: 0.3rem 0.25rem;
             text-align: left;
             border-bottom: 3px solid #dee2e6;
             font-size: 0.85rem;
@@ -355,12 +355,16 @@
             word-wrap: break-word;
         }
 
-        th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Lender - just enough for longest name */
-        th:nth-child(2), td:nth-child(2) { width: 15%; }  /* Funding - just enough for "£10,000 - £500,000" */
-        th:nth-child(3), td:nth-child(3) { width: 23.33%; }  /* Key Criteria - equal share of remaining */
-        th:nth-child(4), td:nth-child(4) { width: 15.56%; }  /* Key Documents - equal share of remaining */
-        th:nth-child(5), td:nth-child(5) { width: 15.56%; }  /* Security - equal share of remaining */
-        th:nth-child(6), td:nth-child(6) { width: 15.55%; }  /* Product USP - equal share of remaining */
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th:nth-child(1), td:nth-child(1) { width: 14%; }  /* Lender - more compact */
+        th:nth-child(2), td:nth-child(2) { width: 11%; }  /* Funding - much more compact */
+        th:nth-child(3), td:nth-child(3) { width: 32%; }  /* Key Criteria - significantly more space */
+        th:nth-child(4), td:nth-child(4) { width: 18%; }  /* Key Documents - more space */
+        th:nth-child(5), td:nth-child(5) { width: 11%; }  /* Security - compact */
+        th:nth-child(6), td:nth-child(6) { width: 14%; }  /* Product USP */
 
         th {
             background: #172c40;
