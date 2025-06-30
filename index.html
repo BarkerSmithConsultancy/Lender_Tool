@@ -599,7 +599,6 @@
                                 <span class="single-select-placeholder">Select homeowner requirement...</span>
                             </div>
                             <div class="single-select-dropdown" id="homeownerRequirementDropdown">
-                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'either')">Either</div>
                                 <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'yes')">Yes</div>
                                 <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'no')">No</div>
                             </div>
@@ -641,7 +640,7 @@
         // Lookup Tables for repeated values
         const LENDERS = ["365 Finance","Bibby","Bizcap","Capify","CubeFunder","Elect Capital","Elect","Fleximize","Funding Alternative","Funding Circle","Got Capital","Iwoca","Lending Crowd","Little Business Loans","Max Cap","Momenta","My Cashline","Nucleus","One Stop Business Finance","Seneca Trade Partners","Simply Funded","Swiftfund","Swishfund","TP24","YouLend"];
         
-        const PRODUCTS = ["MCA","Asset Finance","Invoice Finance","Unsecured Loan","Unsecured","Asset","Invoice","Revolving"];
+        const PRODUCTS = ["MCA","Asset Finance","Invoice Finance","Unsecured Loan","Unsecured Loan","Asset","Invoice","Revolving"];
         
         const COMPANY_TYPES = ["","Ltd Company","LLP","Sole Traders","Plc","Ltd Company, LLP","Ltd Company, LLP, Sole Traders","Ltd Company, LLP, Plc","LLP (one partner has to be Ltd Co)"];
         
@@ -1218,7 +1217,7 @@
                     }
                     
                     // Homeowner requirement filter
-                    if (selectedHomeownerRequirement && selectedHomeownerRequirement !== 'either') {
+                    if (selectedHomeownerRequirement) {
                         const lenderHomeowner = lender.HOMEOWNER_STATUS ? lender.HOMEOWNER_STATUS.toLowerCase() : '';
                         if (selectedHomeownerRequirement === 'yes' && lenderHomeowner !== 'yes') return false;
                         if (selectedHomeownerRequirement === 'no' && lenderHomeowner !== 'no') return false;
