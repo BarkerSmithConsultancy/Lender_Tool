@@ -519,10 +519,12 @@
                 <!-- Row 1 -->
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label for="lenderSearch">Lender</label>
-                        <div class="autocomplete-container">
-                            <input type="text" id="lenderSearch" class="filter-input" placeholder="Type lender name...">
-                            <div class="autocomplete-dropdown" id="lenderAutocomplete"></div>
+                        <label for="lenderSelect">Lender</label>
+                        <div class="multi-select" id="lenderSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('lender')">
+                                <span class="multi-select-placeholder">Select lender...</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="lenderDropdown"></div>
                         </div>
                     </div>
 
@@ -638,7 +640,7 @@
         // Complete Optimized Data Structure with all 77 lenders
         
         // Lookup Tables for repeated values
-        const LENDERS = ["365 Finance","Bibby","Bizcap","Capify","CubeFunder","Elect Capital","Elect","Fleximize","Funding Alternative","Funding Circle","Got Capital","Iwoca","Lending Crowd","Little Business Loans","Max Cap","Momenta","My Cashline","Nucleus","One Stop Business Finance","Seneca Trade Partners","Simply Funded","Swiftfund","Swishfund","TP24","YouLend"];
+        const LENDERS = ["365 Finance","Bibby","Bizcap","Capify","CubeFunder","Elect Capital","Fleximize","Funding Alternative","Funding Circle","Got Capital","Iwoca","Lending Crowd","Little Business Loans","Max Cap","Momenta","My Cashline","Nucleus","One Stop Business Finance","Seneca Trade Partners","Simply Funded","Swiftfund","Swishfund","TP24","YouLend"];
         
         const PRODUCTS = ["Merchant Cash Advance","Asset Finance","Invoice Finance","Unsecured Loan","Unsecured Loan","Asset Finance","Invoice Finance","Revolving Credit Facility"];
         
@@ -658,7 +660,6 @@
             "Capify": { mintFinance: true, eliteMoney: true },
             "CubeFunder": { mintFinance: true, eliteMoney: true },
             "Elect Capital": { mintFinance: true, eliteMoney: true },
-            "Elect": { mintFinance: true, eliteMoney: true },
             "Fleximize": { mintFinance: true, eliteMoney: true },
             "Funding Alternative": { mintFinance: false, eliteMoney: true },
             "Funding Circle": { mintFinance: true, eliteMoney: true },
@@ -693,8 +694,8 @@
             [3,3,5000,250000,3,6,1,3,10000,2,2,1,1,1,"No",3,"Need at least £500 headroom for end of day balances","Can look at poor credit previous insolvencies CCJ's & Defaults, Factor Rates from 1.35, Same Day Funding, Daily or Weekly Repayments","proposals@capify.co.uk"],
             [4,3,5000,100000,3,12,1,3,4000,2,2,1,1,1,"No",2,"Won't deal with business's with more than 3 directors, Assets needed for security, Debenture required, Cross corporate guarantee","Monthly interest rate and only pay on outstanding loan amount, No ERC, Monthly repayments","https://www.cubefunder.com/brokers/"],
             [4,3,10000,100000,12,24,1,3,10000,2,2,1,1,1,"No",2,"Won't deal with business's with more than 3 directors, Assets needed for security, Debenture required, Cross corporate guarantee","Monthly interest rate and only pay on outstanding loan amount, No ERC, Monthly repayments","https://www.cubefunder.com/brokers/"],
-            [5,3,5000,75000,0,6,1,12,25000,2,1,1,1,2,"No",1,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com"],
-            [5,3,75001,750000,0,6,1,12,25000,2,1,1,1,2,"No",1,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600, Debenture required over £75000","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com"],
+            [6,3,5000,75000,0,6,1,12,25000,2,1,1,1,2,"No",1,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com"],
+            [6,3,75001,750000,0,6,1,12,25000,2,1,1,1,2,"No",1,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600, Debenture required over £75000","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com"],
             [2,4,5000,500000,3,10,5,4,12000,2,2,1,1,2,"No",4,"Financials required if loan over £150000, minimum 1 year trading and £30000 monthly revenue for construction and transportation businesses, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
             [2,5,30000,750000,3,12,5,5,12000,1,2,1,1,2,"Over £150000 accounts are required",4,"Financials required if loan over £150000, minimum 1 year trading and £30000 monthly revenue for construction and transportation businesses, Businesses with defaults and judgements are accepted, 1st or 2nd charge, Cross corporate guarantees may be required","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
             [3,4,5000,250000,3,6,1,3,10000,2,2,1,1,1,"No",3,"Need at least £500 headroom for end of day balances","Can look at poor credit previous insolvencies CCJ's & Defaults, Factor Rates from 1.35, Same Day Funding, Daily or Weekly Repayments","apply@capify.com"],
@@ -702,12 +703,12 @@
             [3,4,10000,250000,7,18,1,6,10000,2,2,1,1,2,"No",3,"Need at least £500 headroom for end of day balances","Happy to lend with existing Debenture, Factor Rates from 1.2, Same day funding possible, Daily or Weekly Repayments","apply@capify.com"],
             [4,4,5000,100000,3,12,5,12,4000,2,2,1,1,1,"No",4,"No County Court Judgements, No Failed company history, Minimum Monthly Turnover £8000","Risk based lending, Monthly Rates from 2.95%, Monthly Repayment","apply@cubefunder.com"],
             [4,4,10000,100000,12,24,5,12,10000,2,2,1,1,1,"No",4,"No County Court Judgements, No Failed company history, Minimum Monthly Turnover £8000","Risk based lending, Monthly Rates from 2.95%, Monthly Repayment","apply@cubefunder.com"],
-            [6,4,5000,75000,0,6,7,36,250000,2,2,1,1,2,"2 Years Filed Accounts",4,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600","Flexible facility, Monthly Rates from 0.6% + Base, Fast funding once setup, No fixed repayment terms use when required","apply@elect.com"],
-            [6,4,75001,750000,0,6,7,36,250000,2,2,1,1,2,"2 Years Filed Accounts",4,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600, Debenture required over £75000","Flexible facility, Monthly Rates from 0.6% + Base, Fast funding once setup, No fixed repayment terms use when required","apply@elect.com"],
-            [7,4,10000,250000,3,12,5,6,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","apply@fleximize.com"],
-            [7,4,10000,250000,12,60,5,12,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","apply@fleximize.com"],
-            [7,5,10000,500000,3,12,5,6,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","apply@fleximize.com"],
-            [7,5,10000,500000,12,60,5,12,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","apply@fleximize.com"],
+            [5,4,5000,75000,0,6,7,36,250000,2,2,1,1,2,"2 Years Filed Accounts",4,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600","Flexible facility, Monthly Rates from 0.6% + Base, Fast funding once setup, No fixed repayment terms use when required","apply@electcapital.com"],
+            [5,4,75001,750000,0,6,7,36,250000,2,2,1,1,2,"2 Years Filed Accounts",4,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600, Debenture required over £75000","Flexible facility, Monthly Rates from 0.6% + Base, Fast funding once setup, No fixed repayment terms use when required","apply@electcapital.com"],
+            [6,4,10000,250000,3,12,5,6,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","apply@fleximize.com"],
+            [6,4,10000,250000,12,60,5,12,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","apply@fleximize.com"],
+            [6,5,10000,500000,3,12,5,6,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","apply@fleximize.com"],
+            [6,5,10000,500000,12,60,5,12,25000,1,2,1,1,1,"1 Year Filed Accounts, Up to date Management Accounts, VAT Returns (if VAT registered)",4,"Loan amount must not exceed 2 x monthly revenue","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","apply@fleximize.com"],
             [8,4,10000,250000,0,9,1,6,5000,2,2,1,1,2,"No",2,"Monthly card sales of at least £5000, PG from all directors, Debenture may be required if exceptional circumstances","Fixed percentage of daily card payments","apply@fundingalternative.com"],
             [8,0,5000,250000,3,9,1,6,5000,2,2,1,1,2,"No",2,"Monthly card sales of at least £5000, PG from all directors, Debenture may be required if exceptional circumstances","Fixed percentage of daily card payments","apply@fundingalternative.com"],
             [8,6,0,300000,0,0,1,6,12500,2,2,1,1,2,"Invoices",2,"Debenture required, Service completed or product supplied at time of invoice, Up to 90% of invoice value paid","No contractual arrangement, can be done on selected invoices not the whole debtor book, Bad debt protection is provided, Will do export invoices to global suppliers","apply@fundingalternative.com"],
@@ -764,9 +765,11 @@
         // Global Variables
         let lenderData = [];
         let filteredData = [];
+        let selectedLenders = [];
         let selectedCompanyTypes = [];
         let selectedProductTypes = [];
         let selectedLocations = [];
+        let allLenders = [];
         let allCompanyTypes = [];
         let allProductTypes = [];
         let allLocations = [];
@@ -815,14 +818,12 @@
             try {
                 // Cache DOM elements
                 domElements = {
-                    lenderSearch: document.getElementById('lenderSearch'),
                     loanAmount: document.getElementById('loanAmount'),
                     termMonths: document.getElementById('termMonths'),
                     tradingTime: document.getElementById('tradingTime'),
                     monthlyTurnover: document.getElementById('monthlyTurnover'),
                     headerResultsSummary: document.getElementById('headerResultsSummary'),
-                    resultsTableBody: document.getElementById('resultsTableBody'),
-                    lenderAutocomplete: document.getElementById('lenderAutocomplete')
+                    resultsTableBody: document.getElementById('resultsTableBody')
                 };
 
                 // Decompress data
@@ -839,11 +840,16 @@
 
         // Parse and prepare data
         function parseData() {
+            const lenderSet = new Set();
             const companyTypeSet = new Set();
             const productTypeSet = new Set();
             const locationSet = new Set();
             
             lenderData.forEach(lender => {
+                if (lender.LENDER && lender.LENDER.trim() !== '') {
+                    lenderSet.add(lender.LENDER.trim());
+                }
+                
                 if (lender.COMPANY_TYPE && lender.COMPANY_TYPE.trim() !== '') {
                     const types = lender.COMPANY_TYPE.split(', ');
                     types.forEach(type => companyTypeSet.add(type.trim()));
@@ -860,11 +866,17 @@
                 }
             });
 
+            allLenders = Array.from(lenderSet).filter(lender => lender !== '').sort();
             allCompanyTypes = Array.from(companyTypeSet).filter(type => type !== '').sort();
             allProductTypes = Array.from(productTypeSet).filter(type => type !== '').sort();
             allLocations = Array.from(locationSet).filter(location => location !== '').sort();
 
-            lenderData.sort((a, b) => a.LENDER.localeCompare(b.LENDER));
+            // Sort lender data safely
+            lenderData.sort((a, b) => {
+                const nameA = a.LENDER || '';
+                const nameB = b.LENDER || '';
+                return nameA.localeCompare(nameB);
+            });
         }
 
         function parseCurrency(currencyStr) {
@@ -889,7 +901,6 @@
 
         // Initialize filter components
         function initializeFilters() {
-            setupAutocomplete();
             setupMultiSelects();
             setupFilterListeners();
         }
@@ -923,6 +934,18 @@
         }
 
         function setupMultiSelects() {
+            // Lenders
+            const lenderDropdown = document.getElementById('lenderDropdown');
+            if (lenderDropdown) {
+                lenderDropdown.innerHTML = allLenders
+                    .map(lender => `
+                        <div class="multi-select-option" onclick="event.stopPropagation(); toggleLender('${escapeHtml(lender)}')">
+                            <input type="checkbox" id="lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}" onchange="event.stopPropagation(); toggleLender('${escapeHtml(lender)}')">
+                            <label for="lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}">${escapeHtml(lender)}</label>
+                        </div>
+                    `).join('');
+            }
+
             // Company Types
             const companyDropdown = document.getElementById('companyTypeDropdown');
             if (companyDropdown) {
@@ -989,9 +1012,18 @@
         }
 
         // Interactive Functions
-        function selectLender(name) {
-            domElements.lenderSearch.value = name;
-            domElements.lenderAutocomplete.style.display = 'none';
+        function toggleLender(lender) {
+            const checkbox = document.getElementById(`lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`);
+            
+            if (selectedLenders.includes(lender)) {
+                selectedLenders = selectedLenders.filter(l => l !== lender);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedLenders.push(lender);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateMultiSelectDisplay('lender', selectedLenders);
             applyFilters();
         }
 
@@ -1096,7 +1128,8 @@
 
         function updateMultiSelectDisplay(type, selectedItems) {
             const display = document.querySelector(`#${type}Select .multi-select-display`);
-            const placeholder = type === 'companyType' ? 'Select company type...' : 
+            const placeholder = type === 'lender' ? 'Select lender...' :
+                              type === 'companyType' ? 'Select company type...' : 
                               type === 'productType' ? 'Select product type...' : 
                               'Select location...';
             
@@ -1107,7 +1140,7 @@
                     .map(item => `
                         <span class="multi-select-tag">
                             ${escapeHtml(item)}
-                            <span class="remove" onclick="toggle${type === 'companyType' ? 'CompanyType' : type === 'productType' ? 'ProductType' : 'Location'}('${escapeHtml(item)}')">&times;</span>
+                            <span class="remove" onclick="toggle${type === 'lender' ? 'Lender' : type === 'companyType' ? 'CompanyType' : type === 'productType' ? 'ProductType' : 'Location'}('${escapeHtml(item)}')">&times;</span>
                         </span>
                     `).join('');
             }
@@ -1125,18 +1158,19 @@
         }
 
         function clearAllFilters() {
-            if (domElements.lenderSearch) domElements.lenderSearch.value = '';
             if (domElements.loanAmount) domElements.loanAmount.value = '';
             if (domElements.termMonths) domElements.termMonths.value = '';
             if (domElements.tradingTime) domElements.tradingTime.value = '';
             if (domElements.monthlyTurnover) domElements.monthlyTurnover.value = '';
             
+            selectedLenders = [];
             selectedCompanyTypes = [];
             selectedProductTypes = [];
             selectedLocations = [];
             selectedPgRequirement = '';
             selectedHomeownerRequirement = '';
             
+            updateMultiSelectDisplay('lender', selectedLenders);
             updateMultiSelectDisplay('companyType', selectedCompanyTypes);
             updateMultiSelectDisplay('productType', selectedProductTypes);
             updateMultiSelectDisplay('location', selectedLocations);
@@ -1160,15 +1194,14 @@
         // Filter Logic
         function applyFilters() {
             try {
-                const lenderSearch = domElements.lenderSearch?.value?.toLowerCase() || '';
                 const loanAmount = parseFloat(domElements.loanAmount?.value) || null;
                 const termMonths = parseInt(domElements.termMonths?.value) || null;
                 const tradingTime = parseInt(domElements.tradingTime?.value) || null;
                 const monthlyTurnover = parseFloat(domElements.monthlyTurnover?.value) || null;
 
                 filteredData = lenderData.filter(lender => {
-                    // Lender name filter
-                    if (lenderSearch && !lender.LENDER.toLowerCase().includes(lenderSearch)) return false;
+                    // Lender filter
+                    if (selectedLenders.length > 0 && !selectedLenders.includes(lender.LENDER)) return false;
                     
                     // Loan amount filter
                     if (loanAmount && (loanAmount < lender.MIN_LOAN_NUM || (lender.MAX_LOAN_NUM > 0 && loanAmount > lender.MAX_LOAN_NUM))) return false;
@@ -1224,7 +1257,7 @@
                     }
 
                     return true;
-                }).sort((a, b) => a.LENDER.localeCompare(b.LENDER));
+                });
 
                 renderResults();
             } catch (error) {
@@ -1260,7 +1293,14 @@
                     return;
                 }
 
-                domElements.resultsTableBody.innerHTML = filteredData.map(lender => {
+                // Sort filtered data alphabetically by lender name before rendering
+                const sortedData = [...filteredData].sort((a, b) => {
+                    const nameA = (a.LENDER || '').trim();
+                    const nameB = (b.LENDER || '').trim();
+                    return nameA.localeCompare(nameB);
+                });
+
+                domElements.resultsTableBody.innerHTML = sortedData.map(lender => {
                     const amountRange = lender.MIN_LOAN_NUM > 0 || lender.MAX_LOAN_NUM > 0 ? 
                         `${formatCurrency(lender.MIN_LOAN_NUM)} - ${formatCurrency(lender.MAX_LOAN_NUM)}` : 
                         'Not specified';
