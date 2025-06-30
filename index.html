@@ -395,6 +395,36 @@
             display: inline-block;
         }
 
+        /* Panel Indicator Styles */
+        .panel-indicators {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .panel-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .panel-indicator.mint-finance {
+            background-color: #172c40; /* Same blue as header */
+            color: #5affc4; /* Mint green color */
+        }
+
+        .panel-indicator.elite-money {
+            background-color: #ffd700; /* Gold color */
+            color: #172c40; /* Same blue as header */
+        }
+
         .amount-range {
             color: #28a745;
             font-weight: 600;
@@ -617,12 +647,41 @@
         
         const YESNO = ["","Yes","No","Either"];
 
-        // Compressed data format: [lenderIdx,productIdx,minLoan,maxLoan,minTerm,maxTerm,companyTypeIdx,minTrading,minTurnover,homeownerIdx,existingLending,pgReqIdx,openBankingIdx,bankStmtIdx,filedAccounts,locationIdx,additionalCriteria,productUSP,submission]
+        // Panel mapping based on CSV data
+        const PANEL_MAPPING = {
+            "365 Finance": { mintFinance: false, eliteMoney: true },
+            "Bibby": { mintFinance: true, eliteMoney: false },
+            "Bizcap": { mintFinance: true, eliteMoney: true },
+            "Capify": { mintFinance: true, eliteMoney: true },
+            "CubeFunder": { mintFinance: true, eliteMoney: true },
+            "Elect Capital": { mintFinance: true, eliteMoney: true },
+            "Elect": { mintFinance: true, eliteMoney: true },
+            "Fleximize": { mintFinance: true, eliteMoney: true },
+            "Funding Alternative": { mintFinance: false, eliteMoney: true },
+            "Funding Circle": { mintFinance: true, eliteMoney: true },
+            "Got Capital": { mintFinance: true, eliteMoney: true },
+            "Iwoca": { mintFinance: true, eliteMoney: true },
+            "Lending Crowd": { mintFinance: true, eliteMoney: true },
+            "Little Business Loans": { mintFinance: true, eliteMoney: true },
+            "Max Cap": { mintFinance: true, eliteMoney: true },
+            "Momenta": { mintFinance: true, eliteMoney: true },
+            "My Cashline": { mintFinance: true, eliteMoney: true },
+            "Nucleus": { mintFinance: true, eliteMoney: true },
+            "One Stop Business Finance": { mintFinance: true, eliteMoney: true },
+            "Seneca Trade Partners": { mintFinance: true, eliteMoney: true },
+            "Simply Funded": { mintFinance: true, eliteMoney: true },
+            "Swiftfund": { mintFinance: true, eliteMoney: true },
+            "Swishfund": { mintFinance: false, eliteMoney: true },
+            "TP24": { mintFinance: true, eliteMoney: true },
+            "YouLend": { mintFinance: true, eliteMoney: true }
+        };
+
+        // Compressed data format: [lenderIdx,productIdx,minLoan,maxLoan,minTerm,maxTerm,companyTypeIdx,minTrading,minTurnover,homeownerIdx,existingLending,pgReqIdx,openBankingIdx,bankStmtIdx,filedAccounts,locationIdx,additionalCriteria,productUSP,submission,mintFinancePanel,eliteMoneyPanel]
         const COMPRESSED_DATA = [
-            [0,0,10000,500000,0,10,6,6,10000,2,2,1,1,2,"No",1,"Must process payments through a card machine and/or online payment system","Flexible as repayments based on a Sweep % of monthly card / online sales, Factor Rates from 1.2","https://365businessfinance.my.site.com/partner/login"],
-            [1,1,0,0,0,0,0,0,0,0,0,0,0,1,"",0,"","",""],
-            [1,2,0,0,0,0,0,0,0,0,0,0,0,1,"",0,"","",""],
-            [2,3,5000,150000,3,10,5,4,12000,2,2,1,1,2,"No",1,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available, Options on Factor Rates / Commission","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
+            [0,0,10000,500000,0,10,6,6,10000,2,2,1,1,2,"No",1,"Must process payments through a card machine and/or online payment system","Flexible as repayments based on a Sweep % of monthly card / online sales, Factor Rates from 1.2","https://365businessfinance.my.site.com/partner/login",false,true],
+            [1,1,0,0,0,0,0,0,0,0,0,0,0,1,"",0,"","","",true,false],
+            [1,2,0,0,0,0,0,0,0,0,0,0,0,1,"",0,"","","",true,false],
+            [2,3,5000,150000,3,10,5,4,12000,2,2,1,1,2,"No",1,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available, Options on Factor Rates / Commission","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f",true,true],
             [2,3,150001,500000,3,10,5,4,12000,2,2,1,1,2,"1 Year Filed Accounts",1,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available, Options on Factor Rates / Commission","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
             [2,1,30000,150000,3,12,5,5,12000,1,2,1,1,2,"No",1,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
             [2,1,150001,750000,3,12,5,5,12000,1,2,1,1,2,"1 Year Filed Accounts",1,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue, Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f"],
@@ -714,31 +773,38 @@
 
         // Decompress data function
         function decompressData() {
-            return COMPRESSED_DATA.map(item => ({
-                LENDER: LENDERS[item[0]],
-                PRODUCT_TYPE: PRODUCTS[item[1]],
-                MIN_LOAN: `£${item[2].toLocaleString()}.00`,
-                MAX_LOAN: `£${item[3].toLocaleString()}.00`,
-                MIN_TERM: item[4],
-                MAX_TERM: item[5],
-                COMPANY_TYPE: item[6] !== undefined ? COMPANY_TYPES[item[6]] : "",
-                MIN_TRADING_TIME: item[7],
-                MIN_TURNOVER: item[8],
-                HOMEOWNER_STATUS: item[9] !== undefined ? YESNO[item[9]] : "",
-                EXISTING_LENDING: item[10] !== undefined ? YESNO[item[10]] : "",
-                PG_REQ: item[11] !== undefined ? YESNO[item[11]] : "",
-                OPEN_BANKING: item[12] !== undefined ? YESNO[item[12]] : "",
-                BANK_STATEMENTS: item[13] !== undefined ? BANK_STATEMENTS[item[13]] : "",
-                FILED_ACCOUNTS: item[14] || "",
-                LOCATION: item[15] !== undefined ? LOCATIONS[item[15]] : "",
-                ADDITIONAL_CRITERIA: item[16] || "",
-                PRODUCT_USP: item[17] || "",
-                SUBMISSION: item[18] || "",
-                // Computed fields
-                MIN_LOAN_NUM: item[2],
-                MAX_LOAN_NUM: item[3],
-                MIN_MONTHLY_TURNOVER: item[8]
-            }));
+            return COMPRESSED_DATA.map(item => {
+                const lenderName = LENDERS[item[0]];
+                const panelInfo = PANEL_MAPPING[lenderName] || { mintFinance: false, eliteMoney: false };
+                
+                return {
+                    LENDER: lenderName,
+                    PRODUCT_TYPE: PRODUCTS[item[1]],
+                    MIN_LOAN: `£${item[2].toLocaleString()}.00`,
+                    MAX_LOAN: `£${item[3].toLocaleString()}.00`,
+                    MIN_TERM: item[4],
+                    MAX_TERM: item[5],
+                    COMPANY_TYPE: item[6] !== undefined ? COMPANY_TYPES[item[6]] : "",
+                    MIN_TRADING_TIME: item[7],
+                    MIN_TURNOVER: item[8],
+                    HOMEOWNER_STATUS: item[9] !== undefined ? YESNO[item[9]] : "",
+                    EXISTING_LENDING: item[10] !== undefined ? YESNO[item[10]] : "",
+                    PG_REQ: item[11] !== undefined ? YESNO[item[11]] : "",
+                    OPEN_BANKING: item[12] !== undefined ? YESNO[item[12]] : "",
+                    BANK_STATEMENTS: item[13] !== undefined ? BANK_STATEMENTS[item[13]] : "",
+                    FILED_ACCOUNTS: item[14] || "",
+                    LOCATION: item[15] !== undefined ? LOCATIONS[item[15]] : "",
+                    ADDITIONAL_CRITERIA: item[16] || "",
+                    PRODUCT_USP: item[17] || "",
+                    SUBMISSION: item[18] || "",
+                    MINT_FINANCE_PANEL: panelInfo.mintFinance,
+                    ELITE_MONEY_PANEL: panelInfo.eliteMoney,
+                    // Computed fields
+                    MIN_LOAN_NUM: item[2],
+                    MAX_LOAN_NUM: item[3],
+                    MIN_MONTHLY_TURNOVER: item[8]
+                };
+            });
         }
 
         // Initialize Application
@@ -1210,6 +1276,17 @@
                             `<a href="${escapeHtml(lender.SUBMISSION)}" target="_blank" class="submission-link">Portal</a>`) :
                         'Not specified';
                     
+                    // Panel indicators
+                    const panelIndicators = [];
+                    if (lender.MINT_FINANCE_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator mint-finance" title="Mint Finance Panel">MF</div>');
+                    }
+                    if (lender.ELITE_MONEY_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator elite-money" title="Elite Money Panel">EM</div>');
+                    }
+                    const panelIndicatorsHtml = panelIndicators.length > 0 ? 
+                        `<div class="panel-indicators">${panelIndicators.join('')}</div>` : '';
+                    
                     const criteriaItems = [];
                     if (lender.MIN_TRADING_TIME > 0) criteriaItems.push(`Min Trading: ${lender.MIN_TRADING_TIME} months`);
                     if (lender.MIN_TURNOVER > 0) criteriaItems.push(`Min Turnover: ${formatCurrency(lender.MIN_TURNOVER)}/month`);
@@ -1248,6 +1325,7 @@
                                 <div style="margin-top: 0.25rem; text-align: left;">
                                     ${productBadge}
                                 </div>
+                                ${panelIndicatorsHtml}
                                 <div style="margin-top: 0.25rem; text-align: left;">
                                     ${submissionLink}
                                 </div>
