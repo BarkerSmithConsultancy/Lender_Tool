@@ -1333,7 +1333,15 @@
                     const criteriaItems = [];
                     if (lender.MIN_TRADING_TIME > 0) criteriaItems.push(`Min Trading: ${lender.MIN_TRADING_TIME} months`);
                     if (lender.MIN_TURNOVER > 0) criteriaItems.push(`Min Turnover: ${formatCurrency(lender.MIN_TURNOVER)}/month`);
-                    if (lender.LOCATION && lender.LOCATION.trim() !== '') criteriaItems.push(`Location: ${escapeHtml(lender.LOCATION)}`);
+                    if (lender.LOCATION && lender.LOCATION.trim() !== '') {
+                        // Shorten location display to save space
+                        const shortLocation = lender.LOCATION
+                            .replace('England', 'Eng')
+                            .replace('Scotland', 'Scot')
+                            .replace('Wales', 'Wales')
+                            .replace('Northern Ireland', 'NI');
+                        criteriaItems.push(`Location: ${escapeHtml(shortLocation)}`);
+                    }
                     if (lender.ADDITIONAL_CRITERIA && lender.ADDITIONAL_CRITERIA.trim() !== '') {
                         criteriaItems.push(...lender.ADDITIONAL_CRITERIA.split(',').slice(0, 2).map(criteria => 
                             escapeHtml(criteria.trim())
