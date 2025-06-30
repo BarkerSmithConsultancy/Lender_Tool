@@ -1224,7 +1224,7 @@
                     }
 
                     return true;
-                });
+                }).sort((a, b) => a.LENDER.localeCompare(b.LENDER));
 
                 renderResults();
             } catch (error) {
