@@ -551,10 +551,10 @@
                     </div>
 
                     <div class="filter-group">
-                        <label for="pgRequirement">PG Required</label>
+                        <label for="pgRequirement">Applicant OK to give PG?</label>
                         <div class="single-select" id="pgRequirementSelect">
                             <div class="single-select-display" onclick="toggleSingleSelect('pgRequirement')">
-                                <span class="single-select-placeholder">Select PG required...</span>
+                                <span class="single-select-placeholder">Select PG willingness...</span>
                             </div>
                             <div class="single-select-dropdown" id="pgRequirementDropdown">
                                 <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'yes')">Yes</div>
@@ -564,10 +564,10 @@
                     </div>
 
                     <div class="filter-group">
-                        <label for="homeownerRequirement">Homeowner Requirement</label>
+                        <label for="homeownerRequirement">Applicant Is A Homeowner?</label>
                         <div class="single-select" id="homeownerRequirementSelect">
                             <div class="single-select-display" onclick="toggleSingleSelect('homeownerRequirement')">
-                                <span class="single-select-placeholder">Select homeowner requirement...</span>
+                                <span class="single-select-placeholder">Select homeowner status...</span>
                             </div>
                             <div class="single-select-dropdown" id="homeownerRequirementDropdown">
                                 <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'yes')">Yes</div>
@@ -815,7 +815,7 @@
                 initializeFilters();
                 renderResults();
             } catch (error) {
-                console.error('Initialization error:', error);
+                console.error('Initialisation error:', error);
             }
         });
 
@@ -880,7 +880,7 @@
             return div.innerHTML;
         }
 
-        // Initialize filter components
+        // Initialise filter components
         function initializeFilters() {
             setupMultiSelects();
             setupFilterListeners();
@@ -1101,7 +1101,7 @@
 
         function updateSingleSelectDisplay(type, value) {
             const display = document.querySelector(`#${type}Select .single-select-display`);
-            const placeholder = type === 'pgRequirement' ? 'Select PG required...' : 'Select homeowner requirement...';
+            const placeholder = type === 'pgRequirement' ? 'Select PG willingness...' : 'Select homeowner status...';
             
             if (!value) {
                 display.innerHTML = `<span class="single-select-placeholder">${placeholder}</span>`;
@@ -1144,7 +1144,7 @@
             applyFilters();
         }
 
-        // Filter Logic
+        // Filter Logic - Updated with new PG and Homeowner logic
         function applyFilters() {
             try {
                 const loanAmount = parseFloat(domElements.loanAmount?.value) || null;
@@ -1195,17 +1195,19 @@
                         if (!hasMatchingLocation) return false;
                     }
                     
-                    // PG requirement filter
+                    // Updated PG requirement filter logic
                     if (selectedPgRequirement) {
                         const lenderPgReq = lender.PG_REQ ? lender.PG_REQ.toLowerCase() : '';
-                        if (selectedPgRequirement === 'yes' && lenderPgReq !== 'yes') return false;
+                        // If applicant selects "Yes" (OK to give PG), filter is ignored (no filtering)
+                        // If applicant selects "No" (not OK to give PG), only show lenders with "No" PG requirement
                         if (selectedPgRequirement === 'no' && lenderPgReq !== 'no') return false;
                     }
                     
-                    // Homeowner requirement filter
+                    // Updated Homeowner requirement filter logic
                     if (selectedHomeownerRequirement) {
                         const lenderHomeowner = lender.HOMEOWNER_STATUS ? lender.HOMEOWNER_STATUS.toLowerCase() : '';
-                        if (selectedHomeownerRequirement === 'yes' && lenderHomeowner !== 'yes') return false;
+                        // If applicant selects "Yes" (is a homeowner), filter is ignored (no filtering)
+                        // If applicant selects "No" (not a homeowner), only show lenders with "No" homeowner requirement
                         if (selectedHomeownerRequirement === 'no' && lenderHomeowner !== 'no') return false;
                     }
 
@@ -1381,4 +1383,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
