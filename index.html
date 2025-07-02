@@ -552,26 +552,38 @@
 
                     <div class="filter-group">
                         <label for="pgRequirement">Applicant OK to give PG?</label>
-                        <div class="single-select" id="pgRequirementSelect">
-                            <div class="single-select-display" onclick="toggleSingleSelect('pgRequirement')">
-                                <span class="single-select-placeholder">Select PG willingness...</span>
+                        <div class="multi-select" id="pgRequirementSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('pgRequirement')">
+                                <span class="multi-select-placeholder">Select PG willingness...</span>
                             </div>
-                            <div class="single-select-dropdown" id="pgRequirementDropdown">
-                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'yes')">Yes</div>
-                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'no')">No</div>
+                            <div class="multi-select-dropdown" id="pgRequirementDropdown">
+                                <div class="multi-select-option" onclick="event.stopPropagation(); togglePgRequirement('yes')">
+                                    <input type="checkbox" id="pgRequirement_yes" onchange="event.stopPropagation(); togglePgRequirement('yes')">
+                                    <label for="pgRequirement_yes">Yes</label>
+                                </div>
+                                <div class="multi-select-option" onclick="event.stopPropagation(); togglePgRequirement('no')">
+                                    <input type="checkbox" id="pgRequirement_no" onchange="event.stopPropagation(); togglePgRequirement('no')">
+                                    <label for="pgRequirement_no">No</label>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="filter-group">
                         <label for="homeownerRequirement">Applicant Is A Homeowner?</label>
-                        <div class="single-select" id="homeownerRequirementSelect">
-                            <div class="single-select-display" onclick="toggleSingleSelect('homeownerRequirement')">
-                                <span class="single-select-placeholder">Select homeowner status...</span>
+                        <div class="multi-select" id="homeownerRequirementSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('homeownerRequirement')">
+                                <span class="multi-select-placeholder">Select homeowner status...</span>
                             </div>
-                            <div class="single-select-dropdown" id="homeownerRequirementDropdown">
-                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'yes')">Yes</div>
-                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'no')">No</div>
+                            <div class="multi-select-dropdown" id="homeownerRequirementDropdown">
+                                <div class="multi-select-option" onclick="event.stopPropagation(); toggleHomeownerRequirement('yes')">
+                                    <input type="checkbox" id="homeownerRequirement_yes" onchange="event.stopPropagation(); toggleHomeownerRequirement('yes')">
+                                    <label for="homeownerRequirement_yes">Yes</label>
+                                </div>
+                                <div class="multi-select-option" onclick="event.stopPropagation(); toggleHomeownerRequirement('no')">
+                                    <input type="checkbox" id="homeownerRequirement_no" onchange="event.stopPropagation(); toggleHomeownerRequirement('no')">
+                                    <label for="homeownerRequirement_no">No</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -944,13 +956,6 @@
                         multiSelect.classList.remove('open');
                     }
                 });
-                document.querySelectorAll('.single-select').forEach(singleSelect => {
-                    if (!singleSelect.contains(e.target)) {
-                        const dropdown = singleSelect.querySelector('.single-select-dropdown');
-                        dropdown.classList.remove('show');
-                        singleSelect.classList.remove('open');
-                    }
-                });
             });
         }
 
@@ -988,8 +993,6 @@
             // Hide all other dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
-            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             // Toggle this dropdown
             if (!isVisible) {
@@ -999,15 +1002,16 @@
         }
 
         function toggleSingleSelect(type) {
+            // This function is no longer used but kept for potential other single select filters
             const dropdown = document.getElementById(type + 'Dropdown');
             const singleSelect = document.getElementById(type + 'Select');
+            if (!dropdown || !singleSelect) return;
+            
             const isVisible = dropdown.classList.contains('show');
             
             // Hide all other dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
-            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             // Toggle this dropdown
             if (!isVisible) {
@@ -1061,22 +1065,76 @@
             applyFilters();
         }
 
-        function selectSingleOption(type, value) {
-            if (type === 'pgRequirement') {
+        function togglePgRequirement(value) {
+            const checkbox = document.getElementById(`pgRequirement_${value}`);
+            
+            if (selectedPgRequirement === value) {
+                selectedPgRequirement = '';
+                if (checkbox) checkbox.checked = false;
+            } else {
+                // Uncheck the other option first
+                const otherValue = value === 'yes' ? 'no' : 'yes';
+                const otherCheckbox = document.getElementById(`pgRequirement_${otherValue}`);
+                if (otherCheckbox) otherCheckbox.checked = false;
+                
                 selectedPgRequirement = value;
-                updateSingleSelectDisplay('pgRequirement', value);
-            } else if (type === 'homeownerRequirement') {
-                selectedHomeownerRequirement = value;
-                updateSingleSelectDisplay('homeownerRequirement', value);
+                if (checkbox) checkbox.checked = true;
             }
             
-            // Hide dropdown
-            const dropdown = document.getElementById(type + 'Dropdown');
-            const singleSelect = document.getElementById(type + 'Select');
-            dropdown.classList.remove('show');
-            singleSelect.classList.remove('open');
-            
+            updatePgRequirementDisplay();
             applyFilters();
+        }
+
+        function toggleHomeownerRequirement(value) {
+            const checkbox = document.getElementById(`homeownerRequirement_${value}`);
+            
+            if (selectedHomeownerRequirement === value) {
+                selectedHomeownerRequirement = '';
+                if (checkbox) checkbox.checked = false;
+            } else {
+                // Uncheck the other option first
+                const otherValue = value === 'yes' ? 'no' : 'yes';
+                const otherCheckbox = document.getElementById(`homeownerRequirement_${otherValue}`);
+                if (otherCheckbox) otherCheckbox.checked = false;
+                
+                selectedHomeownerRequirement = value;
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateHomeownerRequirementDisplay();
+            applyFilters();
+        }
+
+        function updatePgRequirementDisplay() {
+            const display = document.querySelector('#pgRequirementSelect .multi-select-display');
+            
+            if (!selectedPgRequirement) {
+                display.innerHTML = '<span class="multi-select-placeholder">Select PG willingness...</span>';
+            } else {
+                const displayText = selectedPgRequirement.charAt(0).toUpperCase() + selectedPgRequirement.slice(1);
+                display.innerHTML = `
+                    <span class="multi-select-tag">
+                        ${escapeHtml(displayText)}
+                        <span class="remove" onclick="togglePgRequirement('${selectedPgRequirement}')">&times;</span>
+                    </span>
+                `;
+            }
+        }
+
+        function updateHomeownerRequirementDisplay() {
+            const display = document.querySelector('#homeownerRequirementSelect .multi-select-display');
+            
+            if (!selectedHomeownerRequirement) {
+                display.innerHTML = '<span class="multi-select-placeholder">Select homeowner status...</span>';
+            } else {
+                const displayText = selectedHomeownerRequirement.charAt(0).toUpperCase() + selectedHomeownerRequirement.slice(1);
+                display.innerHTML = `
+                    <span class="multi-select-tag">
+                        ${escapeHtml(displayText)}
+                        <span class="remove" onclick="toggleHomeownerRequirement('${selectedHomeownerRequirement}')">&times;</span>
+                    </span>
+                `;
+            }
         }
 
         function updateMultiSelectDisplay(type, selectedItems) {
@@ -1100,8 +1158,12 @@
         }
 
         function updateSingleSelectDisplay(type, value) {
+            // This function is no longer used for PG and Homeowner filters
+            // but kept for potential other single select filters
             const display = document.querySelector(`#${type}Select .single-select-display`);
-            const placeholder = type === 'pgRequirement' ? 'Select PG willingness...' : 'Select homeowner status...';
+            if (!display) return;
+            
+            const placeholder = 'Select option...';
             
             if (!value) {
                 display.innerHTML = `<span class="single-select-placeholder">${placeholder}</span>`;
@@ -1127,8 +1189,8 @@
             updateMultiSelectDisplay('companyType', selectedCompanyTypes);
             updateMultiSelectDisplay('productType', selectedProductTypes);
             updateMultiSelectDisplay('location', selectedLocations);
-            updateSingleSelectDisplay('pgRequirement', '');
-            updateSingleSelectDisplay('homeownerRequirement', '');
+            updatePgRequirementDisplay();
+            updateHomeownerRequirementDisplay();
             
             // Clear all checkboxes
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -1138,8 +1200,6 @@
             // Hide any open dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
-            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
-            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             applyFilters();
         }
