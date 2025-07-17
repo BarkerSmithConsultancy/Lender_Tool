@@ -398,6 +398,11 @@
             color: #172c40; /* Same blue as header */
         }
 
+        .panel-indicator.mills-commercial {
+            background-color: #dc3545; /* Red background */
+            color: white; /* White text */
+        }
+
         .amount-range {
             color: #28a745;
             font-weight: 600;
@@ -551,39 +556,27 @@
                     </div>
 
                     <div class="filter-group">
-                        <label for="pgRequirement">Applicant OK To Give PG?</label>
-                        <div class="multi-select" id="pgRequirementSelect">
-                            <div class="multi-select-display" onclick="toggleMultiSelect('pgRequirement')">
-                                <span class="multi-select-placeholder">Select PG willingness...</span>
+                        <label for="pgRequirement">PG Required</label>
+                        <div class="single-select" id="pgRequirementSelect">
+                            <div class="single-select-display" onclick="toggleSingleSelect('pgRequirement')">
+                                <span class="single-select-placeholder">Select PG required...</span>
                             </div>
-                            <div class="multi-select-dropdown" id="pgRequirementDropdown">
-                                <div class="multi-select-option" onclick="event.stopPropagation(); togglePgRequirement('yes')">
-                                    <input type="checkbox" id="pgRequirement_yes" onchange="event.stopPropagation(); togglePgRequirement('yes')">
-                                    <label for="pgRequirement_yes">Yes</label>
-                                </div>
-                                <div class="multi-select-option" onclick="event.stopPropagation(); togglePgRequirement('no')">
-                                    <input type="checkbox" id="pgRequirement_no" onchange="event.stopPropagation(); togglePgRequirement('no')">
-                                    <label for="pgRequirement_no">No</label>
-                                </div>
+                            <div class="single-select-dropdown" id="pgRequirementDropdown">
+                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'yes')">Yes</div>
+                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'no')">No</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="filter-group">
-                        <label for="homeownerRequirement">Applicant Is A Homeowner?</label>
-                        <div class="multi-select" id="homeownerRequirementSelect">
-                            <div class="multi-select-display" onclick="toggleMultiSelect('homeownerRequirement')">
-                                <span class="multi-select-placeholder">Select homeowner status...</span>
+                        <label for="homeownerRequirement">Homeowner Requirement</label>
+                        <div class="single-select" id="homeownerRequirementSelect">
+                            <div class="single-select-display" onclick="toggleSingleSelect('homeownerRequirement')">
+                                <span class="single-select-placeholder">Select homeowner requirement...</span>
                             </div>
-                            <div class="multi-select-dropdown" id="homeownerRequirementDropdown">
-                                <div class="multi-select-option" onclick="event.stopPropagation(); toggleHomeownerRequirement('yes')">
-                                    <input type="checkbox" id="homeownerRequirement_yes" onchange="event.stopPropagation(); toggleHomeownerRequirement('yes')">
-                                    <label for="homeownerRequirement_yes">Yes</label>
-                                </div>
-                                <div class="multi-select-option" onclick="event.stopPropagation(); toggleHomeownerRequirement('no')">
-                                    <input type="checkbox" id="homeownerRequirement_no" onchange="event.stopPropagation(); toggleHomeownerRequirement('no')">
-                                    <label for="homeownerRequirement_no">No</label>
-                                </div>
+                            <div class="single-select-dropdown" id="homeownerRequirementDropdown">
+                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'yes')">Yes</div>
+                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'no')">No</div>
                             </div>
                         </div>
                     </div>
@@ -617,137 +610,15 @@
         <p>© 2025 Barker Smith Consultancy Limited. All rights reserved.</p>
     </div>
 
+    <!-- Papa Parse Library for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <script>
-        // Updated Optimized Data Structure with all 77 lenders from CSV
-        
-        // Lookup Tables for repeated values
-        const LENDERS = ["365 Finance","Bibby","Bizcap","Capify","CubeFunder","Elect Capital","Fleximize","Funding Alternative","Funding Circle","Got Capital","Lending Crowd","Little Business Loans","Max Cap","Momenta","My Cashline","Nationwide Finance","Nucleus","One Stop business Finance","Out Fund","Playter","Rivers Leasing","Seneca Trade Partners","Simply Funded","Swiftfund","Swishfund","TP24","Triver","YouLend","iwoca"];
-        
-        const PRODUCTS = ["Asset Finance","Invoice Finance","Merchant Cash Advance","Revolving Credit Facility","Secured Loan","Unsecured Loan"];
-        
-        const COMPANY_TYPES = ["","Ltd","Ltd, LLP","Ltd, LLP (one partner has to be Ltd Co)","Ltd, LLP, Plc","Ltd, LLP, Sole Traders"];
-        
-        const LOCATIONS = ["","Eng, Scot, Wales","Eng, Scot, Wales, NI","Eng, Wales"];
-        
-        const BANK_STATEMENTS = ["","12 months","3 months","6 months","N/A","None"];
-        
-        const YESNO = ["","No","Yes"];
+        // Add this to your HTML head for cache busting and version control
+        const DATA_VERSION = '1.0'; // Update this when you change the CSV
 
-        // Panel mapping based on CSV data
-        const PANEL_MAPPING = {
-            "365 Finance": { mintFinance: false, eliteMoney: true },
-            "Bibby": { mintFinance: true, eliteMoney: false },
-            "Bizcap": { mintFinance: true, eliteMoney: true },
-            "Capify": { mintFinance: true, eliteMoney: true },
-            "CubeFunder": { mintFinance: true, eliteMoney: true },
-            "Elect Capital": { mintFinance: true, eliteMoney: true },
-            "Fleximize": { mintFinance: true, eliteMoney: true },
-            "Funding Alternative": { mintFinance: false, eliteMoney: true },
-            "Funding Circle": { mintFinance: true, eliteMoney: true },
-            "Got Capital": { mintFinance: true, eliteMoney: true },
-            "Lending Crowd": { mintFinance: true, eliteMoney: true },
-            "Little Business Loans": { mintFinance: true, eliteMoney: true },
-            "Max Cap": { mintFinance: true, eliteMoney: true },
-            "Momenta": { mintFinance: true, eliteMoney: true },
-            "My Cashline": { mintFinance: true, eliteMoney: true },
-            "Nationwide Finance": { mintFinance: true, eliteMoney: true },
-            "Nucleus": { mintFinance: true, eliteMoney: true },
-            "One Stop business Finance": { mintFinance: true, eliteMoney: true },
-            "Out Fund": { mintFinance: true, eliteMoney: false },
-            "Playter": { mintFinance: false, eliteMoney: true },
-            "Rivers Leasing": { mintFinance: false, eliteMoney: true },
-            "Seneca Trade Partners": { mintFinance: true, eliteMoney: true },
-            "Simply Funded": { mintFinance: true, eliteMoney: true },
-            "Swiftfund": { mintFinance: true, eliteMoney: true },
-            "Swishfund": { mintFinance: false, eliteMoney: true },
-            "TP24": { mintFinance: true, eliteMoney: true },
-            "Triver": { mintFinance: true, eliteMoney: false },
-            "YouLend": { mintFinance: true, eliteMoney: true },
-            "iwoca": { mintFinance: true, eliteMoney: true }
-        };
-
-        // Compressed data format: [lenderIdx,productIdx,minLoan,maxLoan,minTerm,maxTerm,companyTypeIdx,minTrading,minTurnover,homeownerIdx,existingLending,pgReqIdx,openBankingIdx,bankStmtIdx,filedAccounts,locationIdx,additionalCriteria,productUSP,submission,mintFinancePanel,eliteMoneyPanel]
-        const COMPRESSED_DATA = [
-            [0,2,10000,500000,0,10,5,6,10000,1,1,2,2,3,"No",2,"Must process payments through a card machine and/or online payment system","Flexible as repayments based on a Sweep % of monthly card / online sales, Factor Rates from 1.2","https://365businessfinance.my.site.com/partner/login",false,true],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,2,"",0,"","","",true,false],
-            [1,1,0,0,0,0,0,0,0,0,0,0,0,2,"",0,"","","",true,false],
-            [2,5,5000,150000,3,10,2,4,12000,1,1,2,2,3,"No",2,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue for , Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available, Options on Factor Rates / Commission","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f",true,true],
-            [2,5,150001,500000,3,10,2,4,12000,1,1,2,2,3,"1 Year Filed Accounts",2,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue for , Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available, Options on Factor Rates / Commission","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f",true,true],
-            [2,0,30000,150000,3,12,2,5,12000,2,1,2,2,3,"No",2,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue for , Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f",true,true],
-            [2,0,150001,750000,3,12,2,5,12000,2,1,2,2,3,"1 Year Filed Accounts",2,"Construction and transportation businesses require minimum 1 year trading and £30000 monthly revenue for , Businesses with defaults and judgements are accepted","Daily or weekly repayments, Early payment discounts available","https://applications.bizcap.co.uk/?partnerid=e13077f1-8e0c-4c36-85ce-197da59be64f",true,true],
-            [3,5,10000,250000,7,18,1,6,10000,1,1,2,2,3,"No",1,"Need at least £500 headroom for end of day balances","Happy to lend with existing Debenture, Factor Rates from 1.2, Same day funding possible, Daily or Weekly Repayments","proposals@capify.co.uk",true,true],
-            [3,0,50000,1000000,6,24,1,6,10000,2,1,2,2,3,"No",1,"Need at least £500 headroom for end of day balances","Happy to lend with existing Debenture, Factor Rates from 1.12, Funding within 48 hours, Daily or Weekly Repayments","proposals@capify.co.uk",true,true],
-            [3,5,5000,250000,3,6,1,3,10000,1,1,2,2,2,"No",1,"Need at least £500 headroom for end of day balances","Can look at poor credit previous insolvencies CCJ's & Defaults, Factor Rates from 1.35, Same Day Funding, Daily or Weekly Repayments","proposals@capify.co.uk",true,true],
-            [4,5,5000,100000,3,12,1,3,4000,1,1,2,2,2,"No",3,"Won't deal with business's with more than 3 directors, Assets needed for security, Debenture required, Cross corporate guarantee","Monthly interest rate and only pay on outstanding loan amount, No ERC, Monthly repayments","https://www.cubefunder.com/brokers/",true,true],
-            [4,5,10000,100000,12,24,1,3,10000,1,1,2,2,2,"No",3,"Won't deal with business's with more than 3 directors, Assets needed for security, Debenture required, Cross corporate guarantee","Monthly interest rate and only pay on outstanding loan amount, No ERC, Monthly repayments","https://www.cubefunder.com/brokers/",true,true],
-            [5,5,5000,75000,0,6,1,12,25000,1,2,2,2,3,"No",2,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com",true,true],
-            [5,5,75001,750000,0,6,1,12,25000,1,2,2,2,3,"No",2,"Need a breakdown of existing lending, Good personal credit, Good strong end of day balances over £600, Debenture required over £75000","Daily weekly or revenue linked payments, Rates from 1.29%- 1.5%","daniel@electcapital.com",true,true],
-            [6,5,10000,250000,3,12,2,6,25000,2,1,2,2,2,"1 Year Filed Accounts, Up to date Management Acc's, VAT Returns (if VAT registered)",2,"Loan amt must not exceed 2 x monthly rev","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","https://partners.fleximize.com/login",true,true],
-            [6,5,10000,250000,12,60,2,12,25000,2,1,2,2,2,"1 Year Filed Accounts, Up to date Management Acc's, VAT Returns (if VAT registered)",2,"Loan amt must not exceed 2 x monthly rev","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","https://partners.fleximize.com/login",true,true],
-            [6,0,10000,500000,3,12,2,6,25000,2,1,2,2,2,"1 Year Filed Accounts, Up to date Management Acc's, VAT Returns (if VAT registered)",2,"Loan amt must not exceed 2 x monthly rev","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 1.9% - 3.9%, Monthly Repayment","https://partners.fleximize.com/login",true,true],
-            [6,0,10000,500000,12,60,2,12,25000,2,1,2,2,2,"1 Year Filed Accounts, Up to date Management Acc's, VAT Returns (if VAT registered)",2,"Loan amt must not exceed 2 x monthly rev","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Monthly Rates between 0.9% - 2.9%, Monthly Repayment","https://partners.fleximize.com/login",true,true],
-            [7,5,10000,250000,0,9,1,6,12500,1,1,2,2,3,"No",2,"PG from all directors, Debenture may be required if exceptional circumstances","Rates from 1.2-1.6, Daily weekly repayments or variable payments based on cash receipts","applications@fundingalternative.co.uk",false,true],
-            [7,2,5000,250000,3,9,1,6,5000,1,1,2,2,3,"No",3,"Monthly card sales of at least £5000, PG from all directors, Debenture may be required if exceptional circumstances","Fixed percentage of daily card payments","applications@fundingalternative.co.uk",false,true],
-            [7,1,0,300000,0,0,1,6,12500,1,1,2,2,3,"Invoices",3,"Debenture required, Service completed or product supplied at time of invoice, Up to 90% of invoice value paid","No contractual arrangement, can be done on selected invoices not the whole debtor book, Bad debt protection is provided, Will do export invoices to global suppliers","applications@fundingalternative.co.uk",false,true],
-            [8,5,10000,250000,6,24,2,12,0,1,1,2,1,5,"No",2,"Shareholders (50%) need to have been in place for 12 months","Monthly Interest Rate, No ERC, Automated Decision, No Funding Circle Fee added to loan, Monthly Repayment","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [8,5,250001,750000,6,24,2,12,0,1,1,2,1,3,"1 Year Filed Accounts",2,"Shareholders (50%) need to have been in place for 12 months","Monthly Interest Rate, No ERC, No Funding Circle Fee added to loan, Monthly Repayment","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [8,5,10000,100000,24,72,2,12,25000,1,1,2,1,5,"No",2,"Shareholders (50%) need to have been in place for 12 months","Monthly Interest Rate, No ERC, Automated Decision, Monthly Repayment","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [8,5,100000,750000,24,72,2,24,25000,1,1,2,1,3,"2 Years Filed Accounts",2,"Shareholders (50%) need to have been in place for 12 months","Monthly Interest Rate, No ERC, Monthly Repayment","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [8,3,1000,250000,1,12,2,12,2500,1,1,2,1,5,"No",2,"No CCJ's against business in last 12 months, Shareholders (50%) need to have been in place for 12 months","Instant Decision, Repayment Instalment terms across 1 3 6 9 or 12 months, Flat fee for each instalment setup. No recurring fee to maintain facility","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [8,2,1000,250000,1,12,2,12,2500,1,1,2,1,5,"No",2,"No CCJ's against business in last 12 months, Shareholders (50%) need to have been in place for 12 months","Instant Decision","https://www.fundingcircle.com/uk/auth/login?client_id=5c4a9jl1iar89wigrejkt17j51iwdrt&redirect_uri=https%3A%2F%2Fwww.fundingcircle.com%2Fauth%2Ffunding_circle_oauth2%2Fcallback&response_type=code&state=02ad27ded2da472fc1fc6048a1c6c22c340388e86994bf8e",true,true],
-            [9,5,1000,200000,3,6,5,3,10000,1,1,1,2,3,"No",2,"Don't do Law Firms, Arrangement Fee 3% on offers below 10k / 2% on offers above 10k - taken off loan amount","No Personal Guarantee Required, Weekly Repayments, Happy to lend with existing Debenture","luca@gotcapital.co.uk",true,true],
-            [28,5,0,25000,12,60,2,12,5000,1,1,2,2,5,"No",2,"12 month term - monthly rates from 2.45%, 24 month term - monthly rates from 1.95%, 36 to 60 month term - monthly rates from 1.5%, Stronger the business better rate available","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Instant Decisions available up to £100k, Monthly Repayment","https://www.iwoca.co.uk/login/passwordless/email",true,true],
-            [28,5,25001,75000,12,60,2,12,5000,1,1,2,2,3,"No",2,"12 month term - monthly rates from 2.45%, 24 month term - monthly rates from 1.95%, 36 to 60 month term - monthly rates from 1.5%, Stronger the business better rate available","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Instant Decisions available up to £100k, Monthly Repayment","https://www.iwoca.co.uk/login/passwordless/email",true,true],
-            [28,5,75001,1000000,12,60,2,12,5000,1,1,2,2,3,"1 Year Filed Accounts",2,"12 month term - monthly rates from 2.45%, 24 month term - monthly rates from 1.95%, 36 to 60 month term - monthly rates from 1.5%, Stronger the business better rate available","No Early Repayment Charges, Only pay interest on time loan is active so can save on total repayment by repaying early, Instant Decisions available up to £100k, Monthly Repayment","https://www.iwoca.co.uk/login/passwordless/email",true,true],
-            [10,5,75000,350000,6,60,2,24,10000,2,1,2,2,2,"2 Years Filed Accounts",1,"No Active CCJ's above £1500, No failed businesses in last 2 years, Director in place for at least 2 years, No Property Development","Monthly Repayment","https://brokers.lendingcrowd.com/login",true,true],
-            [10,0,75000,500000,6,60,2,24,10000,2,1,2,2,2,"2 Years Filed Accounts",1,"No Active CCJ's above £1500, No failed businesses in last 2 years, Director in place for at least 2 years, No Property Development","Monthly Repayment","https://brokers.lendingcrowd.com/login",true,true],
-            [11,5,3000,20000,1,12,1,6,5000,1,1,2,1,2,"No",3,"the loan will need to secured against non fixed assets eg vehicles stock machinery","Rates from 3% pm, Daily weekly or monthly repayments","https://littlebusinessloans.com/brokers/",true,true],
-            [12,5,10000,100000,6,12,5,12,15000,1,1,2,2,3,"No",2,"Good end of day balances, No more than 3 existing lenders","Weekly or Monthly Payments, Happy to lend with existing Debenture","https://brokerportal.maxcap.co.uk/BrokerLogin.php",true,true],
-            [12,5,100001,250000,6,12,5,12,15000,2,1,2,2,3,"No",2,"Good end of day balances, No more than 3 existing lenders","Weekly or Monthly Payments, Happy to lend with existing Debenture","https://brokerportal.maxcap.co.uk/BrokerLogin.php",true,true],
-            [13,5,50000,350000,6,72,3,24,30000,2,1,2,2,2,"1 Year Filed Accounts",2,"Not Loss Making on Accounts, Must have Solvent Balance Sheet, No more than 3 failed payments in bank statements","Rates Competitive with FC, Happy to re-finance existing lending, Monthly Repayment","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [13,0,50000,1500000,6,72,3,24,30000,2,1,2,2,2,"1 Year Filed Accounts",2,"Not Loss Making on Accounts, Must have Solvent Balance Sheet, No more than 3 failed payments in bank statements, 1st or 2nd Charge basis, Primary Residence not acceptable, Resi 75% LTV - Commercial 65% LTV, RICS Valuation required","Rates Competitive with FC, Happy to re-finance existing lending, Monthly Repayment","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [13,0,200000,5000000,0,24,3,24,30000,2,1,2,2,2,"1 Year Filed Accounts",2,"Not Loss Making on Accounts, Must have Solvent Balance Sheet, No more than 3 failed payments in bank statements, 1st charge basis, Primary Residence not acceptable, Up to 75% LTV, RICS Valuation required, Clear view of Exit Plan (sale or re-finance onto longer term debt), Must have proven track record in similar projects","Interest can be rolled up across full term (subject to LTV) or served monthly if property generates rental income, starting from 1% per month (fixed or variable)","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [13,0,200000,4000000,0,24,3,24,30000,2,1,2,2,2,"1 Year Filed Accounts",2,"Not Loss Making on Accounts, Must have Solvent Balance Sheet, No more than 3 failed payments in bank statements, 1st charge basis, Primary Residence not acceptable, Up to 70% LTV, RICS Valuation required, Clear view of Exit Plan (sale or re-finance onto longer term debt), Must have proven track record in similar projects","Interest can be rolled up across full term (subject to LTV) or served monthly if property generates rental income, 1.3% per month (fixed for the term of loan)","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [13,0,0,1500000,0,24,3,24,30000,2,1,2,2,2,"1 Year Filed Accounts",2,"Not Loss Making on Accounts, Must have Solvent Balance Sheet, No more than 3 failed payments in bank statements, 1st charge basis, Up to 65% LTV, RICS Valuation required, Clear view of Exit Plan (re-finance at end of Term Loan)","Interest only up to 24 months, Rates starting at SONIA + 7% per annum, Monthly Repayment","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [13,0,50000,250000,24,60,3,24,17000,2,1,2,2,2,"1 Year Filed Accounts",3,"Finance Lease & Hire Purchase available, No Vehicles, Vendor Quote or Pro-forma Invoice required, Soft Assets","Assets they can finance = Catering equipment IT & Comms equipment Security equipment Office furniture & fittings Telecoms & Video conferencing Scaffolding Gym equipment, Monthly Repayment","https://merchantmoney.my.site.com/login?ec=302&startURL=%2Fs%2Fapplication-submission",true,true],
-            [14,5,5000,100000,12,24,2,12,15000,1,1,2,2,2,"No",2,"Don't do car sales, Send 1 Year Filed Accounts is positive (but not required), Arrangement Fees from 4%","Monthly Repayments, No ERC, Monthly Rates between 2.75% - 4%","brokers@mycashline.co.uk",true,true],
-            [15,4,25000,1000000,12,60,5,3,10000,2,1,1,1,2,"No",3,"1st or 2nd Charge on Residential or Commercial Property, Property Owners have to be Director or Shareholder of the business, Needs to be used to re-finance Assets, Have to be VAT registered","LTV up to 60% of equity, No Valuations Needed, No Exit or Solicitor Fees, Annual Rates between 6%-8%, Will look at Business / Clients with Poor Credit","https://urldefense.proofpoint.com/v2/url?u=http-3A__www.nationwidefinance.co.uk&d=DwMFAw&c=euGZstcaTDllvimEN8b7jXrwqOf-v5A_CdpgnVfiiMM&r=BlTrvyXoXAqFtTdyJAv6INyzHHVgN6NncdXYs-AKo-k&m=Ax6Op2eufF_NxbtG8UogRtkk1-XILeW4oLcz1YgaiKkdHbKgl9DAr2C3enZrFMC9&s=6MaSkctFgqeNdXMM3PC4004ekxkhinXVviKc0eU8v2Q&e=",true,true],
-            [15,4,25000,1000000,12,60,1,3,10000,2,1,1,1,2,"No",3,"1st or 2nd Charge on Residential or Commercial Property, Property Owners have to be Director or Shareholder of the business","LTV up to 60% of equity, No Valuations Needed, No Exit or Solicitor Fees, Annual Rates between 12-14%, Will look at Business / Clients with Poor Credit","https://urldefense.proofpoint.com/v2/url?u=http-3A__www.nationwidefinance.co.uk&d=DwMFAw&c=euGZstcaTDllvimEN8b7jXrwqOf-v5A_CdpgnVfiiMM&r=BlTrvyXoXAqFtTdyJAv6INyzHHVgN6NncdXYs-AKo-k&m=Ax6Op2eufF_NxbtG8UogRtkk1-XILeW4oLcz1YgaiKkdHbKgl9DAr2C3enZrFMC9&s=6MaSkctFgqeNdXMM3PC4004ekxkhinXVviKc0eU8v2Q&e=",true,true],
-            [16,5,10000,250000,3,24,1,12,15000,2,1,2,2,1,"1 Year Filed Accounts",1,"Debenture required on loans of 100k plus","Monthly Repayments, Will do Legal Firms, Monthly Rates of 1.99% - 2.49%, Will lend even if insolvent or loss making","https://www.myfundingportal.co.uk/mynucleus",true,true],
-            [16,5,25000,350000,25,60,1,12,15000,2,1,2,2,1,"1 Year Filed Accounts",1,"Debenture required","Monthly Repayments, Will do Legal Firms, Annual Rates of 16.75%, Will lend even if insolvent or loss making if MI is positive, If business is strong will do Used Car Sales & Construction","https://www.myfundingportal.co.uk/mynucleus",true,true],
-            [16,5,50000,500000,36,72,1,12,15000,2,1,2,2,1,"1 Year Filed Accounts",1,"Debenture required, Open Accounting required","Monthly Repayments, Will do Legal Firms, Annual Rates of 14.95%","https://www.myfundingportal.co.uk/mynucleus",true,true],
-            [16,5,5000,25000,3,12,1,12,15000,1,1,2,2,1,"1 Year Filed Accounts",1,"Revenue based loan","Will lend even id insolvent or loss making, Factor Rate of 1.35, Monthly Repayments","https://www.myfundingportal.co.uk/mynucleus",true,true],
-            [16,5,5000,50000,3,12,1,12,15000,2,1,2,2,1,"1 Year Filed Accounts",1,"Revenue based loan","Will lend even id insolvent or loss making, Factor Rate of 1.3, Monthly Repayments","https://www.myfundingportal.co.uk/mynucleus",true,true],
-            [17,0,100000,2500000,12,24,5,0,10000,2,1,2,2,3,"1 Year Filed Accounts, Management accounts",3,"Debenture required, first or second charge on land or property, Need minimum of £180000 of equity","Can use residential or commercial property for security, Monthly rates from 1.65%, Maximum LTV is 75%, No ERC","liamkillen@osbf.co.uk",true,true],
-            [17,1,50000,1700000,12,0,5,0,10000,2,1,2,2,3,"1 Year Filed Accounts, Management accounts, Invoices",3,"Debenture required, Debt purchase agreement also required, Up to 90% of all fundable debtor book, Service completed or product supplied at time of invoice","Bad debt protection of 0.85% of turnover","liamkillen@osbf.co.uk",true,true],
-            [17,0,50000,2500000,6,24,5,0,10000,2,1,2,2,3,"1 Year Filed Accounts, Management accounts",3,"Debenture required, first or second charge on land or property, Need minimum of £180000 of equity","Can use residential or commercial property for security, Monthly rates from 1.65%, Maximum LTV is 75%, No ERC","liamkillen@osbf.co.uk",true,true],
-            [17,0,50000,1750000,6,24,5,0,10000,2,1,2,2,3,"1 Year Filed Accounts, Management accounts, Invoices",3,"Debenture required, first on land or property or development","Can use residential or commercial property for security, Monthly rates from 1.75%, Maximum LTC is 90% (max LTGDV 70%)","liamkillen@osbf.co.uk",true,true],
-            [18,5,10000,1500000,3,12,2,12,25000,1,1,1,2,3,"Management accounts dated within the last 3 months (over £50k), Cashflow forecast for loans (over £250k), Aged debtors report if offering payment terms",2,"£10k-£1.5m in funding (up to 20% of av. revenue), All industries ex. Construction - adult - restaurants - financial - gambling - forestry, No HMRC arears and large CCJs, No bounced payments, No multiple short-term lenders","Unsecured with no personal-guarantee (as standard), Ability to choose fixed weekly repayments or a revenue share,","https://app.out.fund/users/sign_in",true,false],
-            [19,3,30000,750000,3,12,1,12,30000,1,1,1,2,3,"1 Year Filed Accounts, Management accounts",2,"More than 1 Director, Less than 3 bounced payments in the last 12 months (max 6 in the last 12 months) , Average Bank Balances of 2%+ of turnover, 1.3-2.5% fee of client's facility per month, Don't do Property Development, Won't do CCJ's","Playter Pay, Can be used for VAT / CT payments, No debentures, Generally No PG but can be added based on how strong the financials are, Can upload invoices and split the cost of that over the monthly instalments. First Instalment is repaid on day Playter pay Supplier","https://app.playter.co/",false,true],
-            [19,5,20000,500000,3,12,1,12,30000,1,1,2,2,3,"1 Year Filed Accounts, Management accounts",2,"More than 1 Director, Less than 3 bounced payments in the last 12 months (max 6 in the last 12 months) , Average Bank Balances of 2%+ of turnover, 1.8-2.5% per month on a 12 month facility, Don't do Property Development, Won't do CCJ's","Playter Boost, Don't need to be showing Profits in accounts","https://app.playter.co/",false,true],
-            [19,5,20000,500000,12,24,1,12,30000,2,1,2,2,3,"1 Year Filed Accounts, Management accounts",2,"More than 1 Director, Less than 3 bounced payments in the last 12 months (max 6 in the last 12 months) , Average Bank Balances of 2%+ of turnover, 1.8-2.5% per month on a 12 month facility, Don't do Property Development, Won't do CCJ's","Playter Boost, Dont' need to be showing profits in accounts","https://app.playter.co/",false,true],
-            [20,5,10000,75000,3,12,2,3,10000,2,1,2,1,3,"1 Year Filed Accounts",1,"No CCj's against Company or Director, Arrangement Fee is 4% of loan amount (can be added on)","Early Settlement - repayments outstanding less than 15%, Starting Factor Rate - 1.25","ian@riversleasing.com",false,true],
-            [20,5,5000,50000,24,36,2,6,10000,2,1,2,1,3,"2 Years Filed Accounts",1,"No CCj's against Company or Director, Arrangement Fee is 3% of loan amount (can be added on)","Early Settlement - repayments outstanding less than 3%, Monthly Repayment","ian@riversleasing.com",false,true],
-            [20,5,5000,50000,24,60,2,6,10000,2,1,2,1,3,"3 Years Filed Accounts",1,"No CCj's against Company or Director, Arrangement Fee is 3% of loan amount (can be added on)","Early Settlement - repayments outstanding less than 3%, Monthly Repayment","ian@riversleasing.com",false,true],
-            [20,0,75001,250000,24,36,2,6,10000,2,1,2,1,3,"2 Years Filed Accounts",1,"No CCj's against Company or Director, Arrangement Fee is 2.5% of loan amount + legal fees, Loan paid in £75k Tranches (minimum 2 weeks apart), 2nd Legal charge","Early Settlement - repayments outstanding less than 3%, Monthly Repayment","ian@riversleasing.com",false,true],
-            [20,0,75001,250000,24,60,2,6,10000,2,1,2,1,3,"3 Years Filed Accounts",1,"No CCj's against Company or Director, Arrangement Fee is 2.5% of loan amount + legal fees, Loan paid in £75k Tranches (minimum 2 weeks apart), 2nd Legal charge","Early Settlement - repayments outstanding less than 3%, Monthly Repayment","ian@riversleasing.com",false,true],
-            [20,0,2000,75000,24,36,2,6,10000,2,1,2,1,3,"2 Years Filed Accounts",1,"Finance Lease & Hire Purchase agreements, No CCj's against Company or Director, Document Fee £200 + VAT","Early Settlement - rentals outstanding less than 3%, Monthly Repayment","ian@riversleasing.com",false,true],
-            [21,0,25000,300000,0,12,1,12,20000,2,1,2,1,3,"1 Year Filed Account, Stock breakdown, Management accounts",2,"secured against residential or commercial property, They will lend up to 50% of equity, 90 days to repay drawdown","Can pay suppliers direct or provide funds to business, No charge required over stock, Interest only paid on outstanding balance. No Drawdowns no charges, 1 month rolling contract after 12 months is up","jp@senecatradepartners.com",true,true],
-            [21,3,25000,100000,0,12,1,12,20000,2,1,2,1,3,"1 Year Filed Accounts",2,"secured against residential or commercial property, They will lend up to 50% of equity, 90 days to repay drawdown","Provided with client Portal to manage facility, Multiple Drawdowns available, Interest only paid on outstanding balance. No Drawdowns no charges","jp@senecatradepartners.com",true,true],
-            [22,5,5000,100000,3,12,1,6,4000,1,1,2,2,3,"No",2,"10k minimum Balance Sheet requirement, 25% minimum Ownership requirement","Daily or Weekly Repayments","Applications@simplyfunded.co.uk",true,true],
-            [23,5,10000,100000,3,10,5,6,20000,1,2,2,2,3,"No",2,"Can't fund car sales or legal firms, Factor Rates from 1.3 - 1.5, Arrangement Fee can be added to loan","Will stack on multiple existing lending, Daily or Weekly Repayments, Happy to lend even with existing Debenture","sam@Swiftfund.co.uk",true,true],
-            [23,5,100001,250000,3,10,5,6,20000,1,2,2,2,3,"No",2,"Can't fund car sales legal firms property development, Factor Rates from 1.3 - 1.5, Arrangement Fee can be added to loan, Debenture Required","Will stack on multiple existing lending, Daily or Weekly Repayments","sam@Swiftfund.co.uk",true,true],
-            [24,5,0,50000,0,24,2,12,4000,1,1,2,2,1,"1 Year Filed Accounts, P&L",2,"Will not lend to construction or second hand car dealers, can not have more than 3 existing lenders, One year affordability is profit before tax in accounts","Early settlement is cheapest on the market, No early settlement fees, Monthly Repayment","https://www.swishfund.co.uk/brokerportal/",false,true],
-            [24,5,50000,150000,0,24,2,12,4000,2,1,2,2,1,"1 Year Filed Accounts, P&L",2,"No more than 10 direct debit reversals in 3 months, Must show profit in previous 2 years accounts, One year affordability is profit before tax in accounts, Require 12 months banking transactions via open banking, monthly rates from 1.1% - 2.99%, can not have more than 3 existing lenders","Early settlement is cheapest on the market, No early settlement fees, Monthly Repayment","https://www.swishfund.co.uk/brokerportal/",false,true],
-            [24,0,150000,400000,0,24,2,12,4000,2,1,2,2,1,"1 Year Filed Accounts, P&L",2,"No more than 10 direct debit reversals in 3 months, Must show profit in previous 2 years accounts, One year affordability is profit before tax in accounts, Require 12 months banking transactions via open banking, monthly rates from 1.1% - 2.99%, can not have more than 3 existing lenders, Monthly rates from 1.1%- 2.99%","Early settlement is cheapest on the market, No early settlement fees, Monthly Repayment","https://www.swishfund.co.uk/brokerportal/",false,true],
-            [25,3,250000,5000000,3,3,4,36,85000,1,1,2,2,3,"1 Year Filed Account, Management accounts, Latest Aged Debtor & Credit Report, Last 3 Quarter VAT Returns",2,"Debenture required, Assignment over bank accounts required, Minimum 3 Full Time Employees, £300k + Trade / Accounts Receivables, Solvent Balance Sheet","Very little admin once setup due to linked accounts, Rolling facility - not contracted in after initial 3 months, Monthly rates of 0.5% - 0.75% (+ SONIA)","kevin.vendel@tradeplus24.co.uk",true,true],
-            [26,1,10000,250000,0,60,2,24,8333,1,1,1,2,4,"N/A",2,"Trading B2B with UK businesses or public sector entities, No outstanding charges that cover receivables  with a negative pledge"," 99% invoice advance, 0.06% daily discount fee (no other fees),  Open ended facility - no expiry, Unsecured - no PG or debenture,  No paperwork - only Open Banking required,  No requirement for a trust account,  No setup fee","https://pulse.triver.com/_hcms/mem/login?hsLang=en",true,false],
-            [27,2,5,100000,1,12,5,3,5000,1,1,2,2,3,"No",2,"Must be doing over £5000 monthly card sales, Will offer up to 2x average monthly sales, Won't deal with car sales, firearms, gambling companies","Fixed fee 3-35% of financing amount, Various sweep % available, can look at online & card sales","https://youlend.eu.auth0.com/login?state=hKFo2SBTa3RSMjdfRFFYZnNYb2tLLUQ1WERiRFRFNHdOakRvQaFupWxvZ2luo3RpZNkgVjFBTTVwSVJ1MmFyTUpzNS10Zk01SlA1cjR6ejRmbESjY2lk2SAwcVJnSm9kVEZhZVg0aXJYbjBFQnFTVEhlNUxWRldkWg&client=0qRgJodTFaeX4irXn0EBqSTHe5LVFWdZ&protocol=oauth2&redirect_uri=https%3A%2F%2Fyoulend.com%2Fdashboard%2Fpartners%2Fen%2Flogin-callback&audience=https%3A%2F%2Fylcustomerapi.com&responseType=token%20id_token%20refresh_token&scope=openid%20profile%20email%20offline_access&response_type=code&response_mode=query&nonce=SjVOM3lxaU12Y1J3Zmo3VjU2dDh0OWF5bHcwdVFoa0Zwdnd6Rk5YTTZIWg%3D%3D&code_challenge=brLbXTGomhOS5214sxKBwZN98yT0CffnRRLY1XmcV3g&code_challenge_method=S256&auth0Client=eyJuYW1lIjoiQGF1dGgwL2F1dGgwLWFuZ3VsYXIiLCJ2ZXJzaW9uIjoiMS4xMS4xIiwiZW52Ijp7ImFuZ3VsYXIvY29yZSI6IjE4LjIuMTMifX0%3D",true,true],
-            [27,2,100001,2000000,1,12,5,3,5000,1,1,2,2,3,"Management accounts",2,"Must be doing over £5000 monthly card sales, Will offer up to 2x average monthly sales, Won't deal with car sales, firearms, gambling companies","Fixed fee 3-35% of financing amount, Various sweep % available, can look at online & card sales","https://youlend.eu.auth0.com/login?state=hKFo2SBTa3RSMjdfRFFYZnNYb2tLLUQ1WERiRFRFNHdOakRvQaFupWxvZ2luo3RpZNkgVjFBTTVwSVJ1MmFyTUpzNS10Zk01SlA1cjR6ejRmbESjY2lk2SAwcVJnSm9kVEZhZVg0aXJYbjBFQnFTVEhlNUxWRldkWg&client=0qRgJodTFaeX4irXn0EBqSTHe5LVFWdZ&protocol=oauth2&redirect_uri=https%3A%2F%2Fyoulend.com%2Fdashboard%2Fpartners%2Fen%2Flogin-callback&audience=https%3A%2F%2Fylcustomerapi.com&responseType=token%20id_token%20refresh_token&scope=openid%20profile%20email%20offline_access&response_type=code&response_mode=query&nonce=SjVOM3lxaU12Y1J3Zmo3VjU2dDh0OWF5bHcwdVFoa0Zwdnd6Rk5YTTZIWg%3D%3D&code_challenge=brLbXTGomhOS5214sxKBwZN98yT0CffnRRLY1XmcV3g&code_challenge_method=S256&auth0Client=eyJuYW1lIjoiQGF1dGgwL2F1dGgwLWFuZ3VsYXIiLCJ2ZXJzaW9uIjoiMS4xMS4xIiwiZW52Ijp7ImFuZ3VsYXIvY29yZSI6IjE4LjIuMTMifX0%3D",true,true],
-            [27,2,200001,2000000,1,12,5,3,5000,1,1,2,2,3,"Management accounts, Virtual meeting with underwriter",2,"Must be doing over £5000 monthly card sales, Will offer up to 2x average monthly sales, Won't deal with car sales, firearms, gambling companies","Fixed fee 3-35% of financing amount, Various sweep % available, can look at online & card sales","https://youlend.eu.auth0.com/login?state=hKFo2SBTa3RSMjdfRFFYZnNYb2tLLUQ1WERiRFRFNHdOakRvQaFupWxvZ2luo3RpZNkgVjFBTTVwSVJ1MmFyTUpzNS10Zk01SlA1cjR6ejRmbESjY2lk2SAwcVJnSm9kVEZhZVg0aXJYbjBFQnFTVEhlNUxWRldkWg&client=0qRgJodTFaeX4irXn0EBqSTHe5LVFWdZ&protocol=oauth2&redirect_uri=https%3A%2F%2Fyoulend.com%2Fdashboard%2Fpartners%2Fen%2Flogin-callback&audience=https%3A%2F%2Fylcustomerapi.com&responseType=token%20id_token%20refresh_token&scope=openid%20profile%20email%20offline_access&response_type=code&response_mode=query&nonce=SjVOM3lxaU12Y1J3Zmo3VjU2dDh0OWF5bHcwdVFoa0Zwdnd6Rk5YTTZIWg%3D%3D&code_challenge=brLbXTGomhOS5214sxKBwZN98yT0CffnRRLY1XmcV3g&code_challenge_method=S256&auth0Client=eyJuYW1lIjoiQGF1dGgwL2F1dGgwLWFuZ3VsYXIiLCJ2ZXJzaW9uIjoiMS4xMS4xIiwiZW52Ijp7ImFuZ3VsYXIvY29yZSI6IjE4LjIuMTMifX0%3D",true,true]
-        ];
-
-        // Global Variables
+        // Global variables for loaded data
+        let csvData = [];
         let lenderData = [];
         let filteredData = [];
         let selectedLenders = [];
@@ -762,54 +633,276 @@
         let selectedHomeownerRequirement = '';
         let domElements = {};
 
-        // Decompress data function
-        function decompressData() {
-            return COMPRESSED_DATA.map((item, index) => {
-                const lenderIndex = item[0];
-                const lenderName = LENDERS[lenderIndex];
+        // Data validation function
+        function validateCSVData(csvRows) {
+            const errors = [];
+            const warnings = [];
+            
+            csvRows.forEach((row, index) => {
+                const rowNum = index + 2; // +2 because CSV is 1-indexed and we skip header
                 
-                // Add error handling for missing lender names
-                if (!lenderName) {
-                    console.warn(`Warning: No lender found at index ${lenderIndex} for data entry ${index}`);
-                    return null; // Skip this entry
+                // Required fields validation
+                if (!row['Lender'] || row['Lender'].trim() === '') {
+                    errors.push(`Row ${rowNum}: Lender name is required`);
                 }
                 
-                const panelInfo = PANEL_MAPPING[lenderName] || { mintFinance: false, eliteMoney: false };
+                if (!row['Product Type'] || row['Product Type'].trim() === '') {
+                    warnings.push(`Row ${rowNum}: Product Type is missing`);
+                }
                 
-                return {
-                    LENDER: lenderName,
-                    PRODUCT_TYPE: PRODUCTS[item[1]],
-                    MIN_LOAN: `£${item[2].toLocaleString()}.00`,
-                    MAX_LOAN: `£${item[3].toLocaleString()}.00`,
-                    MIN_TERM: item[4],
-                    MAX_TERM: item[5],
-                    COMPANY_TYPE: item[6] !== undefined ? COMPANY_TYPES[item[6]] : "",
-                    MIN_TRADING_TIME: item[7],
-                    MIN_TURNOVER: item[8],
-                    HOMEOWNER_STATUS: item[9] !== undefined ? YESNO[item[9]] : "",
-                    EXISTING_LENDING: item[10] !== undefined ? YESNO[item[10]] : "",
-                    PG_REQ: item[11] !== undefined ? YESNO[item[11]] : "",
-                    OPEN_BANKING: item[12] !== undefined ? YESNO[item[12]] : "",
-                    BANK_STATEMENTS: item[13] !== undefined ? BANK_STATEMENTS[item[13]] : "",
-                    FILED_ACCOUNTS: item[14] || "",
-                    LOCATION: item[15] !== undefined ? LOCATIONS[item[15]] : "",
-                    ADDITIONAL_CRITERIA: item[16] || "",
-                    PRODUCT_USP: item[17] || "",
-                    SUBMISSION: item[18] || "",
-                    MINT_FINANCE_PANEL: panelInfo.mintFinance,
-                    ELITE_MONEY_PANEL: panelInfo.eliteMoney,
-                    // Computed fields
-                    MIN_LOAN_NUM: item[2],
-                    MAX_LOAN_NUM: item[3],
-                    MIN_MONTHLY_TURNOVER: item[8]
-                };
-            }).filter(item => item !== null); // Remove null entries
+                // Numeric field validation
+                const numericFields = ['Min Loan', 'Max Loan', 'Min Term', 'Max Term', 'Min Trading Months', 'Min Monthly Turnover'];
+                numericFields.forEach(field => {
+                    const value = row[field];
+                    if (value !== '' && value !== null && value !== undefined) {
+                        const numValue = Number(value);
+                        if (isNaN(numValue) || numValue < 0) {
+                            errors.push(`Row ${rowNum}: ${field} must be a valid positive number (found: "${value}")`);
+                        }
+                    }
+                });
+                
+                // Logical validation
+                const minLoan = Number(row['Min Loan']) || 0;
+                const maxLoan = Number(row['Max Loan']) || 0;
+                if (minLoan > 0 && maxLoan > 0 && minLoan > maxLoan) {
+                    errors.push(`Row ${rowNum}: Min Loan (${minLoan}) cannot be greater than Max Loan (${maxLoan})`);
+                }
+                
+                const minTerm = Number(row['Min Term']) || 0;
+                const maxTerm = Number(row['Max Term']) || 0;
+                if (minTerm > 0 && maxTerm > 0 && minTerm > maxTerm) {
+                    errors.push(`Row ${rowNum}: Min Term (${minTerm}) cannot be greater than Max Term (${maxTerm})`);
+                }
+                
+                // Boolean field validation
+                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'PG Required', 'Open Banking', 'Mint Finance Panel', 'Elite Money Panel'];
+                booleanFields.forEach(field => {
+                    const value = row[field];
+                    if (value && !['Yes', 'No', 'TRUE', 'FALSE', true, false, ''].includes(value)) {
+                        errors.push(`Row ${rowNum}: ${field} must be Yes/No or TRUE/FALSE (found: "${value}")`);
+                    }
+                });
+                
+                // Mills Commercial Finance Panel validation (can be boolean or float)
+                const millsPanel = row['Mills Commercial Finance Panel'];
+                if (millsPanel && millsPanel !== '' && millsPanel !== null && millsPanel !== undefined) {
+                    const numValue = Number(millsPanel);
+                    const boolValue = ['Yes', 'No', 'TRUE', 'FALSE', true, false].includes(millsPanel);
+                    if (isNaN(numValue) && !boolValue) {
+                        errors.push(`Row ${rowNum}: Mills Commercial Finance Panel must be a number or boolean (found: "${millsPanel}")`);
+                    }
+                }
+                
+                // URL validation for submission links
+                const submission = row['Submission'];
+                if (submission && submission.trim() !== '') {
+                    const trimmedSubmission = submission.trim();
+                    if (!trimmedSubmission.includes('@') && !trimmedSubmission.startsWith('http')) {
+                        warnings.push(`Row ${rowNum}: Submission should be an email address or URL (found: "${trimmedSubmission}")`);
+                    }
+                }
+            });
+            
+            return { errors, warnings };
+        }
+
+        // Function to load and parse CSV data
+        async function loadLenderDataFromCSV() {
+            try {
+                // Show loading indicator
+                showLoadingState();
+                
+                // Fetch CSV file with cache busting
+                const response = await fetch(`LenderData.csv?v=${DATA_VERSION}&t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load data: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                // Parse CSV using Papa Parse
+                const parsed = Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    trimHeaders: true,
+                    dynamicTyping: true, // Automatically convert numbers
+                    transformHeader: function(header) {
+                        return header.trim(); // Clean up any whitespace
+                    }
+                });
+                
+                if (parsed.errors.length > 0) {
+                    console.warn('CSV parsing warnings:', parsed.errors);
+                }
+                
+                // Convert CSV data to internal format
+                csvData = parsed.data;
+                lenderData = convertCSVToInternalFormat(csvData);
+                filteredData = [...lenderData];
+                
+                // Extract unique values for filters
+                parseData();
+                
+                // Hide loading and show main content
+                hideLoadingState();
+                
+                // Initialize the application
+                initializeFilters();
+                renderResults();
+                
+                console.log(`Loaded ${lenderData.length} lender products from CSV`);
+                
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        // Convert CSV rows to your internal data structure
+        function convertCSVToInternalFormat(csvRows) {
+            // Validate data first
+            const validation = validateCSVData(csvRows);
+            
+            if (validation.errors.length > 0) {
+                console.error('CSV Data Validation Errors:', validation.errors);
+                throw new Error(`CSV contains ${validation.errors.length} validation error(s):\n${validation.errors.join('\n')}`);
+            }
+            
+            if (validation.warnings.length > 0) {
+                console.warn('CSV Data Validation Warnings:', validation.warnings);
+            }
+            
+            return csvRows.map((row, index) => {
+                try {
+                    // Handle potential data type issues with proper validation
+                    const minLoan = Math.max(0, parseInt(row['Min Loan']) || 0);
+                    const maxLoan = Math.max(0, parseInt(row['Max Loan']) || 0);
+                    const minTerm = Math.max(0, parseInt(row['Min Term']) || 0);
+                    const maxTerm = Math.max(0, parseInt(row['Max Term']) || 0);
+                    const minTrading = Math.max(0, parseInt(row['Min Trading Months']) || 0);
+                    const minTurnover = Math.max(0, parseInt(row['Min Monthly Turnover']) || 0);
+                    
+                    // Convert boolean strings to actual booleans
+                    const mintFinancePanel = (row['Mint Finance Panel'] === 'TRUE' || row['Mint Finance Panel'] === true);
+                    const eliteMoneyPanel = (row['Elite Money Panel'] === 'TRUE' || row['Elite Money Panel'] === true);
+                    
+                    // Handle Mills Commercial Finance Panel (can be boolean or float)
+                    let millsPanel = false;
+                    const millsPanelValue = row['Mills Commercial Finance Panel'];
+                    if (millsPanelValue === 'TRUE' || millsPanelValue === true || millsPanelValue === 'Yes') {
+                        millsPanel = true;
+                    } else if (!isNaN(Number(millsPanelValue)) && Number(millsPanelValue) > 0) {
+                        millsPanel = true;
+                    }
+                    
+                    return {
+                        LENDER: (row['Lender'] || '').toString().trim(),
+                        PRODUCT_TYPE: (row['Product Type'] || '').toString().trim(),
+                        MIN_LOAN: `£${minLoan.toLocaleString()}.00`,
+                        MAX_LOAN: `£${maxLoan.toLocaleString()}.00`,
+                        MIN_TERM: minTerm,
+                        MAX_TERM: maxTerm,
+                        COMPANY_TYPE: (row['Company Type'] || '').toString().trim(),
+                        MIN_TRADING_TIME: minTrading,
+                        MIN_TURNOVER: minTurnover,
+                        HOMEOWNER_STATUS: (row['Homeowner Required'] || '').toString().trim(),
+                        EXISTING_LENDING: (row['Existing Lending Required'] || '').toString().trim(),
+                        PG_REQ: (row['PG Required'] || '').toString().trim(),
+                        OPEN_BANKING: (row['Open Banking'] || '').toString().trim(),
+                        BANK_STATEMENTS: (row['Bank Statements'] || '').toString().trim(),
+                        FILED_ACCOUNTS: (row['Filed Accounts'] || '').toString().trim(),
+                        MANAGEMENT_ACCOUNTS: (row['Management Accounts'] || '').toString().trim(),
+                        AGED_DEBTOR: (row['Aged Debtor'] || '').toString().trim(),
+                        AGED_CREDITOR: (row['Aged Creditor'] || '').toString().trim(),
+                        OTHER_DOCUMENTS: (row['Other Documents'] || '').toString().trim(),
+                        LOCATION: (row['Location'] || '').toString().trim(),
+                        ADDITIONAL_CRITERIA: (row['Additional Criteria'] || '').toString().trim(),
+                        PRODUCT_USP: (row['Product USP'] || '').toString().trim(),
+                        SUBMISSION: (row['Submission'] || '').toString().trim(),
+                        MINT_FINANCE_PANEL: mintFinancePanel,
+                        ELITE_MONEY_PANEL: eliteMoneyPanel,
+                        MILLS_PANEL: millsPanel,
+                        // Computed fields for filtering
+                        MIN_LOAN_NUM: minLoan,
+                        MAX_LOAN_NUM: maxLoan,
+                        MIN_MONTHLY_TURNOVER: minTurnover
+                    };
+                } catch (error) {
+                    console.error(`Error processing row ${index + 1}:`, error, row);
+                    return null;
+                }
+            }).filter(item => item !== null && item.LENDER); // Remove invalid rows
+        }
+
+        // Loading state management
+        function showLoadingState() {
+            const loadingHtml = `
+                <div id="loadingIndicator" style="
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(245, 246, 250, 0.95); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    z-index: 10000;
+                ">
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #172c40; margin-bottom: 1rem;">Loading Lender Data...</h3>
+                        <div style="color: #6c757d;">Fetching the latest information from our database.</div>
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">This should only take a moment.</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', loadingHtml);
+        }
+
+        function hideLoadingState() {
+            const indicator = document.getElementById('loadingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function showErrorState(errorMessage) {
+            const indicator = document.getElementById('loadingIndicator');
+            if (indicator) {
+                indicator.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #dc3545; margin-bottom: 1rem;">Error Loading Data</h3>
+                        <p style="color: #6c757d; margin-bottom: 1rem;">Unable to load lender information:</p>
+                        <p style="color: #dc3545; font-family: monospace; font-size: 0.9rem; margin-bottom: 1.5rem;">${errorMessage}</p>
+                        <button onclick="location.reload()" style="
+                            padding: 0.5rem 1rem; 
+                            background: #007bff; 
+                            color: white; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer;
+                            margin-right: 0.5rem;
+                        ">Refresh Page</button>
+                        <button onclick="loadLenderDataFromCSV()" style="
+                            padding: 0.5rem 1rem; 
+                            background: #28a745; 
+                            color: white; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer;
+                        ">Try Again</button>
+                    </div>
+                `;
+            }
         }
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', function() {
             try {
-                // Cache DOM elements
+                // Cache DOM elements first
                 domElements = {
                     loanAmount: document.getElementById('loanAmount'),
                     termMonths: document.getElementById('termMonths'),
@@ -819,15 +912,12 @@
                     resultsTableBody: document.getElementById('resultsTableBody')
                 };
 
-                // Decompress data
-                lenderData = decompressData();
-                filteredData = [...lenderData];
+                // Load data from CSV instead of embedded data
+                loadLenderDataFromCSV();
                 
-                parseData();
-                initializeFilters();
-                renderResults();
             } catch (error) {
-                console.error('Initialisation error:', error);
+                console.error('Initialization error:', error);
+                showErrorState('Failed to initialize application');
             }
         });
 
@@ -892,7 +982,7 @@
             return div.innerHTML;
         }
 
-        // Initialise filter components
+        // Initialize filter components
         function initializeFilters() {
             setupMultiSelects();
             setupFilterListeners();
@@ -956,6 +1046,13 @@
                         multiSelect.classList.remove('open');
                     }
                 });
+                document.querySelectorAll('.single-select').forEach(singleSelect => {
+                    if (!singleSelect.contains(e.target)) {
+                        const dropdown = singleSelect.querySelector('.single-select-dropdown');
+                        dropdown.classList.remove('show');
+                        singleSelect.classList.remove('open');
+                    }
+                });
             });
         }
 
@@ -993,6 +1090,8 @@
             // Hide all other dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             // Toggle this dropdown
             if (!isVisible) {
@@ -1002,16 +1101,15 @@
         }
 
         function toggleSingleSelect(type) {
-            // This function is no longer used but kept for potential other single select filters
             const dropdown = document.getElementById(type + 'Dropdown');
             const singleSelect = document.getElementById(type + 'Select');
-            if (!dropdown || !singleSelect) return;
-            
             const isVisible = dropdown.classList.contains('show');
             
             // Hide all other dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             // Toggle this dropdown
             if (!isVisible) {
@@ -1065,76 +1163,22 @@
             applyFilters();
         }
 
-        function togglePgRequirement(value) {
-            const checkbox = document.getElementById(`pgRequirement_${value}`);
-            
-            if (selectedPgRequirement === value) {
-                selectedPgRequirement = '';
-                if (checkbox) checkbox.checked = false;
-            } else {
-                // Uncheck the other option first
-                const otherValue = value === 'yes' ? 'no' : 'yes';
-                const otherCheckbox = document.getElementById(`pgRequirement_${otherValue}`);
-                if (otherCheckbox) otherCheckbox.checked = false;
-                
+        function selectSingleOption(type, value) {
+            if (type === 'pgRequirement') {
                 selectedPgRequirement = value;
-                if (checkbox) checkbox.checked = true;
-            }
-            
-            updatePgRequirementDisplay();
-            applyFilters();
-        }
-
-        function toggleHomeownerRequirement(value) {
-            const checkbox = document.getElementById(`homeownerRequirement_${value}`);
-            
-            if (selectedHomeownerRequirement === value) {
-                selectedHomeownerRequirement = '';
-                if (checkbox) checkbox.checked = false;
-            } else {
-                // Uncheck the other option first
-                const otherValue = value === 'yes' ? 'no' : 'yes';
-                const otherCheckbox = document.getElementById(`homeownerRequirement_${otherValue}`);
-                if (otherCheckbox) otherCheckbox.checked = false;
-                
+                updateSingleSelectDisplay('pgRequirement', value);
+            } else if (type === 'homeownerRequirement') {
                 selectedHomeownerRequirement = value;
-                if (checkbox) checkbox.checked = true;
+                updateSingleSelectDisplay('homeownerRequirement', value);
             }
             
-            updateHomeownerRequirementDisplay();
+            // Hide dropdown
+            const dropdown = document.getElementById(type + 'Dropdown');
+            const singleSelect = document.getElementById(type + 'Select');
+            dropdown.classList.remove('show');
+            singleSelect.classList.remove('open');
+            
             applyFilters();
-        }
-
-        function updatePgRequirementDisplay() {
-            const display = document.querySelector('#pgRequirementSelect .multi-select-display');
-            
-            if (!selectedPgRequirement) {
-                display.innerHTML = '<span class="multi-select-placeholder">Select PG willingness...</span>';
-            } else {
-                const displayText = selectedPgRequirement.charAt(0).toUpperCase() + selectedPgRequirement.slice(1);
-                display.innerHTML = `
-                    <span class="multi-select-tag">
-                        ${escapeHtml(displayText)}
-                        <span class="remove" onclick="togglePgRequirement('${selectedPgRequirement}')">&times;</span>
-                    </span>
-                `;
-            }
-        }
-
-        function updateHomeownerRequirementDisplay() {
-            const display = document.querySelector('#homeownerRequirementSelect .multi-select-display');
-            
-            if (!selectedHomeownerRequirement) {
-                display.innerHTML = '<span class="multi-select-placeholder">Select homeowner status...</span>';
-            } else {
-                const displayText = selectedHomeownerRequirement.charAt(0).toUpperCase() + selectedHomeownerRequirement.slice(1);
-                display.innerHTML = `
-                    <span class="multi-select-tag">
-                        ${escapeHtml(displayText)}
-                        <span class="remove" onclick="toggleHomeownerRequirement('${selectedHomeownerRequirement}')">&times;</span>
-                    </span>
-                `;
-            }
         }
 
         function updateMultiSelectDisplay(type, selectedItems) {
@@ -1158,12 +1202,8 @@
         }
 
         function updateSingleSelectDisplay(type, value) {
-            // This function is no longer used for PG and Homeowner filters
-            // but kept for potential other single select filters
             const display = document.querySelector(`#${type}Select .single-select-display`);
-            if (!display) return;
-            
-            const placeholder = 'Select option...';
+            const placeholder = type === 'pgRequirement' ? 'Select PG required...' : 'Select homeowner requirement...';
             
             if (!value) {
                 display.innerHTML = `<span class="single-select-placeholder">${placeholder}</span>`;
@@ -1189,8 +1229,8 @@
             updateMultiSelectDisplay('companyType', selectedCompanyTypes);
             updateMultiSelectDisplay('productType', selectedProductTypes);
             updateMultiSelectDisplay('location', selectedLocations);
-            updatePgRequirementDisplay();
-            updateHomeownerRequirementDisplay();
+            updateSingleSelectDisplay('pgRequirement', '');
+            updateSingleSelectDisplay('homeownerRequirement', '');
             
             // Clear all checkboxes
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -1200,11 +1240,13 @@
             // Hide any open dropdowns
             document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
             
             applyFilters();
         }
 
-        // Filter Logic - Updated with new PG and Homeowner logic
+        // Filter Logic
         function applyFilters() {
             try {
                 const loanAmount = parseFloat(domElements.loanAmount?.value) || null;
@@ -1255,19 +1297,17 @@
                         if (!hasMatchingLocation) return false;
                     }
                     
-                    // Updated PG requirement filter logic
+                    // PG requirement filter
                     if (selectedPgRequirement) {
                         const lenderPgReq = lender.PG_REQ ? lender.PG_REQ.toLowerCase() : '';
-                        // If applicant selects "Yes" (OK to give PG), filter is ignored (no filtering)
-                        // If applicant selects "No" (not OK to give PG), only show lenders with "No" PG requirement
+                        if (selectedPgRequirement === 'yes' && lenderPgReq !== 'yes') return false;
                         if (selectedPgRequirement === 'no' && lenderPgReq !== 'no') return false;
                     }
                     
-                    // Updated Homeowner requirement filter logic
+                    // Homeowner requirement filter
                     if (selectedHomeownerRequirement) {
                         const lenderHomeowner = lender.HOMEOWNER_STATUS ? lender.HOMEOWNER_STATUS.toLowerCase() : '';
-                        // If applicant selects "Yes" (is a homeowner), filter is ignored (no filtering)
-                        // If applicant selects "No" (not a homeowner), only show lenders with "No" homeowner requirement
+                        if (selectedHomeownerRequirement === 'yes' && lenderHomeowner !== 'yes') return false;
                         if (selectedHomeownerRequirement === 'no' && lenderHomeowner !== 'no') return false;
                     }
 
@@ -1334,13 +1374,16 @@
                             `<a href="${escapeHtml(lender.SUBMISSION)}" target="_blank" class="submission-link">Portal</a>`) :
                         'Not specified';
                     
-                    // Panel indicators
+                    // Panel indicators with new Mills Commercial Finance panel
                     const panelIndicators = [];
                     if (lender.MINT_FINANCE_PANEL) {
                         panelIndicators.push('<div class="panel-indicator mint-finance" title="Mint Finance Panel">MF</div>');
                     }
                     if (lender.ELITE_MONEY_PANEL) {
                         panelIndicators.push('<div class="panel-indicator elite-money" title="Elite Money Panel">EM</div>');
+                    }
+                    if (lender.MILLS_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator mills-commercial" title="Mills Commercial Finance Panel">MC</div>');
                     }
                     const panelIndicatorsHtml = panelIndicators.length > 0 ? 
                         `<div class="panel-indicators">${panelIndicators.join('')}</div>` : '';
@@ -1363,16 +1406,42 @@
                         ).filter(c => c.length > 0));
                     }
                     
+                    // Document items in specified order
                     const documentItems = [];
-                    if (lender.BANK_STATEMENTS && lender.BANK_STATEMENTS.trim() !== '') {
-                        let bankStatementsText = `Bank Statements: ${escapeHtml(lender.BANK_STATEMENTS)}`;
-                        if (lender.OPEN_BANKING && lender.OPEN_BANKING.trim().toLowerCase() === 'yes') {
-                            bankStatementsText += ' or Open Banking';
-                        }
-                        documentItems.push(bankStatementsText);
+                    
+                    // 1. Open Banking
+                    if (lender.OPEN_BANKING && lender.OPEN_BANKING.trim() !== '' && lender.OPEN_BANKING.toLowerCase() !== 'no') {
+                        documentItems.push(`Open Banking: ${escapeHtml(lender.OPEN_BANKING)}`);
                     }
+                    
+                    // 2. Bank Statements
+                    if (lender.BANK_STATEMENTS && lender.BANK_STATEMENTS.trim() !== '' && lender.BANK_STATEMENTS.toLowerCase() !== 'none') {
+                        documentItems.push(`Bank Statements: ${escapeHtml(lender.BANK_STATEMENTS)}`);
+                    }
+                    
+                    // 3. Filed Accounts
                     if (lender.FILED_ACCOUNTS && lender.FILED_ACCOUNTS.trim() !== '' && lender.FILED_ACCOUNTS.toLowerCase() !== 'no') {
-                        documentItems.push(`Financials: ${escapeHtml(lender.FILED_ACCOUNTS)}`);
+                        documentItems.push(`Filed Accounts: ${escapeHtml(lender.FILED_ACCOUNTS)}`);
+                    }
+                    
+                    // 4. Management Accounts
+                    if (lender.MANAGEMENT_ACCOUNTS && lender.MANAGEMENT_ACCOUNTS.trim() !== '') {
+                        documentItems.push(`Management Accounts: ${escapeHtml(lender.MANAGEMENT_ACCOUNTS)}`);
+                    }
+                    
+                    // 5. Aged Debtor
+                    if (lender.AGED_DEBTOR && lender.AGED_DEBTOR.trim() !== '') {
+                        documentItems.push(`Aged Debtor: ${escapeHtml(lender.AGED_DEBTOR)}`);
+                    }
+                    
+                    // 6. Aged Creditor
+                    if (lender.AGED_CREDITOR && lender.AGED_CREDITOR.trim() !== '') {
+                        documentItems.push(`Aged Creditor: ${escapeHtml(lender.AGED_CREDITOR)}`);
+                    }
+                    
+                    // 7. Other Documents
+                    if (lender.OTHER_DOCUMENTS && lender.OTHER_DOCUMENTS.trim() !== '') {
+                        documentItems.push(`Other: ${escapeHtml(lender.OTHER_DOCUMENTS)}`);
                     }
                     
                     const securityItems = [];
@@ -1440,6 +1509,12 @@
                     `;
                 }
             }
+        }
+
+        // Optional: Add a manual refresh function for updates
+        function refreshLenderData() {
+            console.log('Refreshing lender data...');
+            loadLenderDataFromCSV();
         }
     </script>
 </body>
