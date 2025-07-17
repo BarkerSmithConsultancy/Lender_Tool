@@ -676,7 +676,7 @@
                 }
                 
                 // Boolean field validation
-                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'PG Required', 'Debenture Required', 'Mint Finance Panel', 'Elite Money Panel'];
+                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'Mint Finance Panel', 'Elite Money Panel'];
                 booleanFields.forEach(field => {
                     const value = row[field];
                     if (value && !['Yes', 'No', 'TRUE', 'FALSE', true, false, ''].includes(value)) {
