@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lender Product Matrix v2</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+            color: #172c40;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            background: #172c40;
+            color: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-results-summary {
+            background: #5affc4;
+            border: 2px solid #172c40;
+            color: #172c40;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            width: 120px;
+            text-align: center;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-clear-filters {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-clear-filters:hover {
+            background: #c82333;
+        }
+
+        /* Filter Section Styles */
+        .filter-container {
+            background: #f8f9fa;
+            border: 4px solid #5affc4;
+            margin: 1rem;
+            border-radius: 8px;
+            overflow: visible;
+        }
+
+        .filter-content {
+            padding: 0.75rem;
+            overflow: visible;
+        }
+
+        .filter-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+            color: #172c40;
+            font-size: 0.85rem;
+        }
+
+        /* Input Styles */
+        .filter-input {
+            padding: 0.4rem;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            height: 38px;
+            width: 100%;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #5affc4;
+            box-shadow: 0 0 0 3px rgba(90, 255, 196, 0.1);
+        }
+
+        /* Multi-Select Styles */
+        .multi-select {
+            position: relative;
+        }
+
+        .multi-select-display {
+            padding: 0.4rem;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            height: 38px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            align-items: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .multi-select-display:hover,
+        .multi-select-display:focus {
+            outline: none;
+            border-color: #5affc4;
+            box-shadow: 0 0 0 3px rgba(90, 255, 196, 0.1);
+        }
+
+        .multi-select-display::after {
+            content: "▼";
+            margin-left: auto;
+            color: #6c757d;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+
+        .multi-select.open .multi-select-display::after {
+            transform: rotate(180deg);
+        }
+
+        .multi-select-placeholder {
+            color: #6c757d;
+            font-size: 0.85rem;
+            font-weight: normal;
+            opacity: 1;
+        }
+
+        .multi-select-tag {
+            background: #5affc4;
+            color: #172c40;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .multi-select-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #5affc4;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .multi-select-dropdown.show {
+            display: block;
+        }
+
+        .multi-select-option {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .multi-select-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Single Select Styles */
+        .single-select {
+            position: relative;
+        }
+
+        .single-select-display {
+            padding: 0.4rem;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .single-select-display::after {
+            content: "▼";
+            margin-left: auto;
+            color: #6c757d;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+
+        .single-select.open .single-select-display::after {
+            transform: rotate(180deg);
+        }
+
+        .single-select-placeholder {
+            color: #6c757d;
+            font-size: 0.85rem;
+            font-weight: normal;
+            opacity: 1;
+        }
+
+        .single-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #5affc4;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .single-select-dropdown.show {
+            display: block;
+        }
+
+        .single-select-option {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .single-select-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Results Table Styles */
+        .results-container {
+            margin: 1rem;
+        }
+
+        .results-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 0.3rem 0.25rem;
+            text-align: left;
+            border-bottom: 3px solid #dee2e6;
+            font-size: 0.85rem;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th:nth-child(1), td:nth-child(1) { width: 14%; }  /* Lender */
+        th:nth-child(2), td:nth-child(2) { width: 11%; }  /* Funding */
+        th:nth-child(3), td:nth-child(3) { width: 10.5%; }  /* Security */
+        th:nth-child(4), td:nth-child(4) { width: 21.5%; }  /* Key Criteria */
+        th:nth-child(5), td:nth-child(5) { width: 21.5%; }  /* Key Documents */
+        th:nth-child(6), td:nth-child(6) { width: 21.5%; }  /* Product USP */
+
+        th {
+            background: #172c40;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .lender-name {
+            font-weight: bold;
+            color: #172c40;
+            text-align: left;
+        }
+
+        .product-badge {
+            display: inline-block;
+            background: #17a2b8;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 0.125rem;
+            white-space: nowrap;
+        }
+
+        .submission-link {
+            color: #007bff;
+            text-decoration: none;
+            text-align: left;
+            display: inline-block;
+        }
+
+        /* Panel Indicator Styles */
+        .panel-indicators {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .panel-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .panel-indicator.mint-finance {
+            background-color: #172c40; /* Same blue as header */
+            color: #5affc4; /* Mint green color */
+        }
+
+        .panel-indicator.elite-money {
+            background-color: #ffd700; /* Gold color */
+            color: #172c40; /* Same blue as header */
+        }
+
+        .panel-indicator.mills-commercial {
+            background-color: #dc3545; /* Red background */
+            color: white; /* White text */
+        }
+
+        .amount-range {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .term-range {
+            color: #17a2b8;
+            font-weight: 600;
+        }
+
+        .criteria-list, .documents-list, .security-list, .usp-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .criteria-list li, .documents-list li, .security-list li, .usp-list li {
+            padding: 0.125rem 0;
+            font-size: 0.85rem;
+        }
+
+        .criteria-list li:before, .documents-list li:before, .security-list li:before, .usp-list li:before {
+            content: "• ";
+            color: #172c40;
+            font-weight: bold;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .footer {
+            background: #172c40;
+            color: white;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.75rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .filter-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="header-results-summary" id="headerResultsSummary">
+                Loading...
+            </div>
+        </div>
+        <div class="header-center">
+            <h1>Lender Product Matrix v2</h1>
+        </div>
+        <div class="header-right">
+            <button class="header-clear-filters" onclick="clearAllFilters()">Clear Filters</button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-container">
+        <div class="filter-content">
+            <div class="filter-rows">
+                <!-- Row 1 -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="lenderSelect">Lender</label>
+                        <div class="multi-select" id="lenderSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('lender')">
+                                <span class="multi-select-placeholder">Select lender...</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="lenderDropdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="loanAmount">Loan Amount (£)</label>
+                        <input type="number" id="loanAmount" class="filter-input" placeholder="Enter loan amount..." min="0" max="5000000" step="1000">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="termMonths">Loan Term (Months)</label>
+                        <input type="number" id="termMonths" class="filter-input" placeholder="Enter term in months..." min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="tradingTime">Company Trading (Months)</label>
+                        <input type="number" id="tradingTime" class="filter-input" placeholder="Enter trading timeframe in months..." min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="monthlyTurnover">Company Turnover (£ per month)</label>
+                        <input type="number" id="monthlyTurnover" class="filter-input" placeholder="Enter monthly turnover..." min="0" max="5000000" step="1000">
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="productType">Product Type</label>
+                        <div class="multi-select" id="productTypeSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('productType')">
+                                <span class="multi-select-placeholder">Select product type...</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="productTypeDropdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="companyType">Company Type</label>
+                        <div class="multi-select" id="companyTypeSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('companyType')">
+                                <span class="multi-select-placeholder">Select company type...</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="companyTypeDropdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="location">Company Location</label>
+                        <div class="multi-select" id="locationSelect">
+                            <div class="multi-select-display" onclick="toggleMultiSelect('location')">
+                                <span class="multi-select-placeholder">Select location...</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="locationDropdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="pgRequirement">PG Required</label>
+                        <div class="single-select" id="pgRequirementSelect">
+                            <div class="single-select-display" onclick="toggleSingleSelect('pgRequirement')">
+                                <span class="single-select-placeholder">Select PG required...</span>
+                            </div>
+                            <div class="single-select-dropdown" id="pgRequirementDropdown">
+                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'yes')">Yes</div>
+                                <div class="single-select-option" onclick="selectSingleOption('pgRequirement', 'no')">No</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="homeownerRequirement">Homeowner Requirement</label>
+                        <div class="single-select" id="homeownerRequirementSelect">
+                            <div class="single-select-display" onclick="toggleSingleSelect('homeownerRequirement')">
+                                <span class="single-select-placeholder">Select homeowner requirement...</span>
+                            </div>
+                            <div class="single-select-dropdown" id="homeownerRequirementDropdown">
+                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'yes')">Yes</div>
+                                <div class="single-select-option" onclick="selectSingleOption('homeownerRequirement', 'no')">No</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-container">
+        <div class="results-table">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Lender</th>
+                        <th>Funding</th>
+                        <th>Security</th>
+                        <th>Key Criteria</th>
+                        <th>Key Documents</th>
+                        <th>Product USP</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2025 Barker Smith Consultancy Limited. All rights reserved.</p>
+    </div>
+
+    <!-- Papa Parse Library for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <script>
+        // Add this to your HTML head for cache busting and version control
+        const DATA_VERSION = '1.0'; // Update this when you change the CSV
+
+        // Global variables for loaded data
+        let csvData = [];
+        let lenderData = [];
+        let filteredData = [];
+        let selectedLenders = [];
+        let selectedCompanyTypes = [];
+        let selectedProductTypes = [];
+        let selectedLocations = [];
+        let allLenders = [];
+        let allCompanyTypes = [];
+        let allProductTypes = [];
+        let allLocations = [];
+        let selectedPgRequirement = '';
+        let selectedHomeownerRequirement = '';
+        let domElements = {};
+
+        // Data validation function
+        function validateCSVData(csvRows) {
+            const errors = [];
+            const warnings = [];
+            
+            csvRows.forEach((row, index) => {
+                const rowNum = index + 2; // +2 because CSV is 1-indexed and we skip header
+                
+                // Required fields validation
+                if (!row['Lender'] || row['Lender'].trim() === '') {
+                    errors.push(`Row ${rowNum}: Lender name is required`);
+                }
+                
+                if (!row['Product Type'] || row['Product Type'].trim() === '') {
+                    warnings.push(`Row ${rowNum}: Product Type is missing`);
+                }
+                
+                // Numeric field validation
+                const numericFields = ['Min Loan', 'Max Loan', 'Min Term', 'Max Term', 'Min Trading Months', 'Min Monthly Turnover'];
+                numericFields.forEach(field => {
+                    const value = row[field];
+                    if (value !== '' && value !== null && value !== undefined) {
+                        const numValue = Number(value);
+                        if (isNaN(numValue) || numValue < 0) {
+                            errors.push(`Row ${rowNum}: ${field} must be a valid positive number (found: "${value}")`);
+                        }
+                    }
+                });
+                
+                // Logical validation
+                const minLoan = Number(row['Min Loan']) || 0;
+                const maxLoan = Number(row['Max Loan']) || 0;
+                if (minLoan > 0 && maxLoan > 0 && minLoan > maxLoan) {
+                    errors.push(`Row ${rowNum}: Min Loan (${minLoan}) cannot be greater than Max Loan (${maxLoan})`);
+                }
+                
+                const minTerm = Number(row['Min Term']) || 0;
+                const maxTerm = Number(row['Max Term']) || 0;
+                if (minTerm > 0 && maxTerm > 0 && minTerm > maxTerm) {
+                    errors.push(`Row ${rowNum}: Min Term (${minTerm}) cannot be greater than Max Term (${maxTerm})`);
+                }
+                
+                // Boolean field validation
+                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'PG Required', 'Mint Finance Panel', 'Elite Money Panel'];
+                booleanFields.forEach(field => {
+                    const value = row[field];
+                    if (value && !['Yes', 'No', 'TRUE', 'FALSE', true, false, ''].includes(value)) {
+                        errors.push(`Row ${rowNum}: ${field} must be Yes/No or TRUE/FALSE (found: "${value}")`);
+                    }
+                });
+                
+                // Mills Commercial Finance Panel validation (can be boolean or float)
+                const millsPanel = row['Mills Commercial Finance Panel'];
+                if (millsPanel && millsPanel !== '' && millsPanel !== null && millsPanel !== undefined) {
+                    const numValue = Number(millsPanel);
+                    const boolValue = ['Yes', 'No', 'TRUE', 'FALSE', true, false].includes(millsPanel);
+                    if (isNaN(numValue) && !boolValue) {
+                        errors.push(`Row ${rowNum}: Mills Commercial Finance Panel must be a number or boolean (found: "${millsPanel}")`);
+                    }
+                }
+                
+                // URL validation for submission links
+                const submission = row['Submission'];
+                if (submission && submission.trim() !== '') {
+                    const trimmedSubmission = submission.trim();
+                    if (!trimmedSubmission.includes('@') && !trimmedSubmission.startsWith('http')) {
+                        warnings.push(`Row ${rowNum}: Submission should be an email address or URL (found: "${trimmedSubmission}")`);
+                    }
+                }
+            });
+            
+            return { errors, warnings };
+        }
+
+        // Function to load and parse CSV data
+        async function loadLenderDataFromCSV() {
+            try {
+                // Show loading indicator
+                showLoadingState();
+                
+                // Fetch CSV file with cache busting
+                const response = await fetch(`Lender-Data.csv?v=${DATA_VERSION}&t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load data: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                // Parse CSV using Papa Parse
+                const parsed = Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    trimHeaders: true,
+                    dynamicTyping: true, // Automatically convert numbers
+                    transformHeader: function(header) {
+                        return header.trim(); // Clean up any whitespace
+                    }
+                });
+                
+                if (parsed.errors.length > 0) {
+                    console.warn('CSV parsing warnings:', parsed.errors);
+                }
+                
+                // Convert CSV data to internal format
+                csvData = parsed.data;
+                lenderData = convertCSVToInternalFormat(csvData);
+                filteredData = [...lenderData];
+                
+                // Extract unique values for filters
+                parseData();
+                
+                // Hide loading and show main content
+                hideLoadingState();
+                
+                // Initialize the application
+                initializeFilters();
+                renderResults();
+                
+                console.log(`Loaded ${lenderData.length} lender products from CSV`);
+                
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        // Convert CSV rows to your internal data structure
+        function convertCSVToInternalFormat(csvRows) {
+            // Validate data first
+            const validation = validateCSVData(csvRows);
+            
+            if (validation.errors.length > 0) {
+                console.error('CSV Data Validation Errors:', validation.errors);
+                throw new Error(`CSV contains ${validation.errors.length} validation error(s):\n${validation.errors.join('\n')}`);
+            }
+            
+            if (validation.warnings.length > 0) {
+                console.warn('CSV Data Validation Warnings:', validation.warnings);
+            }
+            
+            return csvRows.map((row, index) => {
+                try {
+                    // Handle potential data type issues with proper validation
+                    const minLoan = Math.max(0, parseInt(row['Min Loan']) || 0);
+                    const maxLoan = Math.max(0, parseInt(row['Max Loan']) || 0);
+                    const minTerm = Math.max(0, parseInt(row['Min Term']) || 0);
+                    const maxTerm = Math.max(0, parseInt(row['Max Term']) || 0);
+                    const minTrading = Math.max(0, parseInt(row['Min Trading Months']) || 0);
+                    const minTurnover = Math.max(0, parseInt(row['Min Monthly Turnover']) || 0);
+                    
+                    // Convert boolean strings to actual booleans
+                    const mintFinancePanel = (row['Mint Finance Panel'] === 'TRUE' || row['Mint Finance Panel'] === true);
+                    const eliteMoneyPanel = (row['Elite Money Panel'] === 'TRUE' || row['Elite Money Panel'] === true);
+                    
+                    // Handle Mills Commercial Finance Panel (can be boolean or float)
+                    let millsPanel = false;
+                    const millsPanelValue = row['Mills Commercial Finance Panel'];
+                    if (millsPanelValue === 'TRUE' || millsPanelValue === true || millsPanelValue === 'Yes') {
+                        millsPanel = true;
+                    } else if (!isNaN(Number(millsPanelValue)) && Number(millsPanelValue) > 0) {
+                        millsPanel = true;
+                    }
+                    
+                    return {
+                        LENDER: (row['Lender'] || '').toString().trim(),
+                        PRODUCT_TYPE: (row['Product Type'] || '').toString().trim(),
+                        MIN_LOAN: `£${minLoan.toLocaleString()}.00`,
+                        MAX_LOAN: `£${maxLoan.toLocaleString()}.00`,
+                        MIN_TERM: minTerm,
+                        MAX_TERM: maxTerm,
+                        COMPANY_TYPE: (row['Company Type'] || '').toString().trim(),
+                        MIN_TRADING_TIME: minTrading,
+                        MIN_TURNOVER: minTurnover,
+                        HOMEOWNER_STATUS: (row['Homeowner Required'] || '').toString().trim(),
+                        EXISTING_LENDING: (row['Existing Lending Required'] || '').toString().trim(),
+                        PG_REQ: (row['PG Required'] || '').toString().trim(),
+                        OPEN_BANKING: (row['Open Banking'] || '').toString().trim(),
+                        BANK_STATEMENTS: (row['Bank Statements'] || '').toString().trim(),
+                        FILED_ACCOUNTS: (row['Filed Accounts'] || '').toString().trim(),
+                        MANAGEMENT_ACCOUNTS: (row['Management Accounts'] || '').toString().trim(),
+                        AGED_DEBTOR: (row['Aged Debtor'] || '').toString().trim(),
+                        AGED_CREDITOR: (row['Aged Creditor'] || '').toString().trim(),
+                        OTHER_DOCUMENTS: (row['Other Documents'] || '').toString().trim(),
+                        LOCATION: (row['Location'] || '').toString().trim(),
+                        ADDITIONAL_CRITERIA: (row['Additional Criteria'] || '').toString().trim(),
+                        PRODUCT_USP: (row['Product USP'] || '').toString().trim(),
+                        SUBMISSION: (row['Submission'] || '').toString().trim(),
+                        MINT_FINANCE_PANEL: mintFinancePanel,
+                        ELITE_MONEY_PANEL: eliteMoneyPanel,
+                        MILLS_PANEL: millsPanel,
+                        // Computed fields for filtering
+                        MIN_LOAN_NUM: minLoan,
+                        MAX_LOAN_NUM: maxLoan,
+                        MIN_MONTHLY_TURNOVER: minTurnover
+                    };
+                } catch (error) {
+                    console.error(`Error processing row ${index + 1}:`, error, row);
+                    return null;
+                }
+            }).filter(item => item !== null && item.LENDER); // Remove invalid rows
+        }
+
+        // Loading state management
+        function showLoadingState() {
+            const loadingHtml = `
+                <div id="loadingIndicator" style="
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(245, 246, 250, 0.95); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    z-index: 10000;
+                ">
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #172c40; margin-bottom: 1rem;">Loading Lender Data...</h3>
+                        <div style="color: #6c757d;">Fetching the latest information from our database.</div>
+                        <div style="margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">This should only take a moment.</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', loadingHtml);
+        }
+
+        function hideLoadingState() {
+            const indicator = document.getElementById('loadingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function showErrorState(errorMessage) {
+            const indicator = document.getElementById('loadingIndicator');
+            if (indicator) {
+                indicator.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h3 style="color: #dc3545; margin-bottom: 1rem;">Error Loading Data</h3>
+                        <p style="color: #6c757d; margin-bottom: 1rem;">Unable to load lender information:</p>
+                        <p style="color: #dc3545; font-family: monospace; font-size: 0.9rem; margin-bottom: 1.5rem;">${errorMessage}</p>
+                        <button onclick="location.reload()" style="
+                            padding: 0.5rem 1rem; 
+                            background: #007bff; 
+                            color: white; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer;
+                            margin-right: 0.5rem;
+                        ">Refresh Page</button>
+                        <button onclick="loadLenderDataFromCSV()" style="
+                            padding: 0.5rem 1rem; 
+                            background: #28a745; 
+                            color: white; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer;
+                        ">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Cache DOM elements first
+                domElements = {
+                    loanAmount: document.getElementById('loanAmount'),
+                    termMonths: document.getElementById('termMonths'),
+                    tradingTime: document.getElementById('tradingTime'),
+                    monthlyTurnover: document.getElementById('monthlyTurnover'),
+                    headerResultsSummary: document.getElementById('headerResultsSummary'),
+                    resultsTableBody: document.getElementById('resultsTableBody')
+                };
+
+                // Load data from CSV instead of embedded data
+                loadLenderDataFromCSV();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showErrorState('Failed to initialize application');
+            }
+        });
+
+        // Parse and prepare data
+        function parseData() {
+            const lenderSet = new Set();
+            const companyTypeSet = new Set();
+            const productTypeSet = new Set();
+            const locationSet = new Set();
+            
+            lenderData.forEach(lender => {
+                if (lender.LENDER && lender.LENDER.trim() !== '') {
+                    lenderSet.add(lender.LENDER.trim());
+                }
+                
+                if (lender.COMPANY_TYPE && lender.COMPANY_TYPE.trim() !== '') {
+                    const types = lender.COMPANY_TYPE.split(', ');
+                    types.forEach(type => companyTypeSet.add(type.trim()));
+                }
+                
+                if (lender.PRODUCT_TYPE && lender.PRODUCT_TYPE.trim() !== '') {
+                    const types = lender.PRODUCT_TYPE.split(', ');
+                    types.forEach(type => productTypeSet.add(type.trim()));
+                }
+                
+                if (lender.LOCATION && lender.LOCATION.trim() !== '') {
+                    const locations = lender.LOCATION.split(', ');
+                    locations.forEach(location => locationSet.add(location.trim()));
+                }
+            });
+
+            allLenders = Array.from(lenderSet).filter(lender => lender !== '').sort();
+            allCompanyTypes = Array.from(companyTypeSet).filter(type => type !== '').sort();
+            allProductTypes = Array.from(productTypeSet).filter(type => type !== '').sort();
+            allLocations = Array.from(locationSet).filter(location => location !== '').sort();
+
+            // Sort lender data safely
+            lenderData.sort((a, b) => {
+                const nameA = a.LENDER || '';
+                const nameB = b.LENDER || '';
+                return nameA.localeCompare(nameB);
+            });
+        }
+
+        function parseCurrency(currencyStr) {
+            if (!currencyStr) return 0;
+            return parseInt(currencyStr.toString().replace(/[£,]/g, '')) || 0;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-GB', {
+                style: 'currency',
+                currency: 'GBP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize filter components
+        function initializeFilters() {
+            setupMultiSelects();
+            setupFilterListeners();
+        }
+
+        function setupMultiSelects() {
+            // Lenders
+            const lenderDropdown = document.getElementById('lenderDropdown');
+            if (lenderDropdown) {
+                lenderDropdown.innerHTML = allLenders
+                    .map(lender => `
+                        <div class="multi-select-option" onclick="event.stopPropagation(); toggleLender('${escapeHtml(lender)}')">
+                            <input type="checkbox" id="lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}" onchange="event.stopPropagation(); toggleLender('${escapeHtml(lender)}')">
+                            <label for="lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}">${escapeHtml(lender)}</label>
+                        </div>
+                    `).join('');
+            }
+
+            // Company Types
+            const companyDropdown = document.getElementById('companyTypeDropdown');
+            if (companyDropdown) {
+                companyDropdown.innerHTML = allCompanyTypes
+                    .map(type => `
+                        <div class="multi-select-option" onclick="event.stopPropagation(); toggleCompanyType('${escapeHtml(type)}')">
+                            <input type="checkbox" id="companyType_${type.replace(/\s+/g, '_').replace(/,/g, '')}" onchange="event.stopPropagation(); toggleCompanyType('${escapeHtml(type)}')">
+                            <label for="companyType_${type.replace(/\s+/g, '_').replace(/,/g, '')}">${escapeHtml(type)}</label>
+                        </div>
+                    `).join('');
+            }
+
+            // Product Types
+            const productDropdown = document.getElementById('productTypeDropdown');
+            if (productDropdown) {
+                productDropdown.innerHTML = allProductTypes
+                    .map(type => `
+                        <div class="multi-select-option" onclick="event.stopPropagation(); toggleProductType('${escapeHtml(type)}')">
+                            <input type="checkbox" id="productType_${type.replace(/\s+/g, '_')}" onchange="event.stopPropagation(); toggleProductType('${escapeHtml(type)}')">
+                            <label for="productType_${type.replace(/\s+/g, '_')}">${escapeHtml(type)}</label>
+                        </div>
+                    `).join('');
+            }
+
+            // Locations
+            const locationDropdown = document.getElementById('locationDropdown');
+            if (locationDropdown) {
+                locationDropdown.innerHTML = allLocations
+                    .map(location => `
+                        <div class="multi-select-option" onclick="event.stopPropagation(); toggleLocation('${escapeHtml(location)}')">
+                            <input type="checkbox" id="location_${location.replace(/\s+/g, '_').replace(/,/g, '')}" onchange="event.stopPropagation(); toggleLocation('${escapeHtml(location)}')">
+                            <label for="location_${location.replace(/\s+/g, '_').replace(/,/g, '')}">${escapeHtml(location)}</label>
+                        </div>
+                    `).join('');
+            }
+
+            // Add event listeners for dropdown management
+            document.addEventListener('click', function(e) {
+                document.querySelectorAll('.multi-select').forEach(multiSelect => {
+                    if (!multiSelect.contains(e.target)) {
+                        const dropdown = multiSelect.querySelector('.multi-select-dropdown');
+                        dropdown.classList.remove('show');
+                        multiSelect.classList.remove('open');
+                    }
+                });
+                document.querySelectorAll('.single-select').forEach(singleSelect => {
+                    if (!singleSelect.contains(e.target)) {
+                        const dropdown = singleSelect.querySelector('.single-select-dropdown');
+                        dropdown.classList.remove('show');
+                        singleSelect.classList.remove('open');
+                    }
+                });
+            });
+        }
+
+        function setupFilterListeners() {
+            const filters = ['loanAmount', 'termMonths', 'tradingTime', 'monthlyTurnover'];
+            filters.forEach(filterId => {
+                const element = document.getElementById(filterId);
+                if (element) {
+                    element.addEventListener('input', applyFilters);
+                }
+            });
+        }
+
+        // Interactive Functions
+        function toggleLender(lender) {
+            const checkbox = document.getElementById(`lender_${lender.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`);
+            
+            if (selectedLenders.includes(lender)) {
+                selectedLenders = selectedLenders.filter(l => l !== lender);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedLenders.push(lender);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateMultiSelectDisplay('lender', selectedLenders);
+            applyFilters();
+        }
+
+        function toggleMultiSelect(type) {
+            const dropdown = document.getElementById(type + 'Dropdown');
+            const multiSelect = document.getElementById(type + 'Select');
+            const isVisible = dropdown.classList.contains('show');
+            
+            // Hide all other dropdowns
+            document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
+            
+            // Toggle this dropdown
+            if (!isVisible) {
+                dropdown.classList.add('show');
+                multiSelect.classList.add('open');
+            }
+        }
+
+        function toggleSingleSelect(type) {
+            const dropdown = document.getElementById(type + 'Dropdown');
+            const singleSelect = document.getElementById(type + 'Select');
+            const isVisible = dropdown.classList.contains('show');
+            
+            // Hide all other dropdowns
+            document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
+            
+            // Toggle this dropdown
+            if (!isVisible) {
+                dropdown.classList.add('show');
+                singleSelect.classList.add('open');
+            }
+        }
+
+        function toggleCompanyType(type) {
+            const checkbox = document.getElementById(`companyType_${type.replace(/\s+/g, '_').replace(/,/g, '')}`);
+            
+            if (selectedCompanyTypes.includes(type)) {
+                selectedCompanyTypes = selectedCompanyTypes.filter(t => t !== type);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedCompanyTypes.push(type);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateMultiSelectDisplay('companyType', selectedCompanyTypes);
+            applyFilters();
+        }
+
+        function toggleProductType(type) {
+            const checkbox = document.getElementById(`productType_${type.replace(/\s+/g, '_')}`);
+            
+            if (selectedProductTypes.includes(type)) {
+                selectedProductTypes = selectedProductTypes.filter(t => t !== type);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedProductTypes.push(type);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateMultiSelectDisplay('productType', selectedProductTypes);
+            applyFilters();
+        }
+
+        function toggleLocation(location) {
+            const checkbox = document.getElementById(`location_${location.replace(/\s+/g, '_').replace(/,/g, '')}`);
+            
+            if (selectedLocations.includes(location)) {
+                selectedLocations = selectedLocations.filter(l => l !== location);
+                if (checkbox) checkbox.checked = false;
+            } else {
+                selectedLocations.push(location);
+                if (checkbox) checkbox.checked = true;
+            }
+            
+            updateMultiSelectDisplay('location', selectedLocations);
+            applyFilters();
+        }
+
+        function selectSingleOption(type, value) {
+            if (type === 'pgRequirement') {
+                selectedPgRequirement = value;
+                updateSingleSelectDisplay('pgRequirement', value);
+            } else if (type === 'homeownerRequirement') {
+                selectedHomeownerRequirement = value;
+                updateSingleSelectDisplay('homeownerRequirement', value);
+            }
+            
+            // Hide dropdown
+            const dropdown = document.getElementById(type + 'Dropdown');
+            const singleSelect = document.getElementById(type + 'Select');
+            dropdown.classList.remove('show');
+            singleSelect.classList.remove('open');
+            
+            applyFilters();
+        }
+
+        function updateMultiSelectDisplay(type, selectedItems) {
+            const display = document.querySelector(`#${type}Select .multi-select-display`);
+            const placeholder = type === 'lender' ? 'Select lender...' :
+                              type === 'companyType' ? 'Select company type...' : 
+                              type === 'productType' ? 'Select product type...' : 
+                              'Select location...';
+            
+            if (selectedItems.length === 0) {
+                display.innerHTML = `<span class="multi-select-placeholder">${placeholder}</span>`;
+            } else {
+                display.innerHTML = selectedItems
+                    .map(item => `
+                        <span class="multi-select-tag">
+                            ${escapeHtml(item)}
+                            <span class="remove" onclick="toggle${type === 'lender' ? 'Lender' : type === 'companyType' ? 'CompanyType' : type === 'productType' ? 'ProductType' : 'Location'}('${escapeHtml(item)}')">&times;</span>
+                        </span>
+                    `).join('');
+            }
+        }
+
+        function updateSingleSelectDisplay(type, value) {
+            const display = document.querySelector(`#${type}Select .single-select-display`);
+            const placeholder = type === 'pgRequirement' ? 'Select PG required...' : 'Select homeowner requirement...';
+            
+            if (!value) {
+                display.innerHTML = `<span class="single-select-placeholder">${placeholder}</span>`;
+            } else {
+                display.innerHTML = escapeHtml(value.charAt(0).toUpperCase() + value.slice(1));
+            }
+        }
+
+        function clearAllFilters() {
+            if (domElements.loanAmount) domElements.loanAmount.value = '';
+            if (domElements.termMonths) domElements.termMonths.value = '';
+            if (domElements.tradingTime) domElements.tradingTime.value = '';
+            if (domElements.monthlyTurnover) domElements.monthlyTurnover.value = '';
+            
+            selectedLenders = [];
+            selectedCompanyTypes = [];
+            selectedProductTypes = [];
+            selectedLocations = [];
+            selectedPgRequirement = '';
+            selectedHomeownerRequirement = '';
+            
+            updateMultiSelectDisplay('lender', selectedLenders);
+            updateMultiSelectDisplay('companyType', selectedCompanyTypes);
+            updateMultiSelectDisplay('productType', selectedProductTypes);
+            updateMultiSelectDisplay('location', selectedLocations);
+            updateSingleSelectDisplay('pgRequirement', '');
+            updateSingleSelectDisplay('homeownerRequirement', '');
+            
+            // Clear all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Hide any open dropdowns
+            document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.multi-select').forEach(ms => ms.classList.remove('open'));
+            document.querySelectorAll('.single-select-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.single-select').forEach(ss => ss.classList.remove('open'));
+            
+            applyFilters();
+        }
+
+        // Filter Logic
+        function applyFilters() {
+            try {
+                const loanAmount = parseFloat(domElements.loanAmount?.value) || null;
+                const termMonths = parseInt(domElements.termMonths?.value) || null;
+                const tradingTime = parseInt(domElements.tradingTime?.value) || null;
+                const monthlyTurnover = parseFloat(domElements.monthlyTurnover?.value) || null;
+
+                filteredData = lenderData.filter(lender => {
+                    // Lender filter
+                    if (selectedLenders.length > 0 && !selectedLenders.includes(lender.LENDER)) return false;
+                    
+                    // Loan amount filter
+                    if (loanAmount && (loanAmount < lender.MIN_LOAN_NUM || (lender.MAX_LOAN_NUM > 0 && loanAmount > lender.MAX_LOAN_NUM))) return false;
+                    
+                    // Term filter
+                    if (termMonths && (termMonths < lender.MIN_TERM || (lender.MAX_TERM > 0 && termMonths > lender.MAX_TERM))) return false;
+                    
+                    // Trading time filter
+                    if (tradingTime && tradingTime < lender.MIN_TRADING_TIME) return false;
+                    
+                    // Monthly turnover filter
+                    if (monthlyTurnover && lender.MIN_TURNOVER && monthlyTurnover < lender.MIN_MONTHLY_TURNOVER) return false;
+                    
+                    // Product type filter
+                    if (selectedProductTypes.length > 0 && lender.PRODUCT_TYPE && lender.PRODUCT_TYPE.trim() !== '') {
+                        const lenderProductTypes = lender.PRODUCT_TYPE.split(', ').map(t => t.trim());
+                        const hasMatchingProduct = selectedProductTypes.some(selectedType => 
+                            lenderProductTypes.includes(selectedType)
+                        );
+                        if (!hasMatchingProduct) return false;
+                    }
+                    
+                    // Company type filter
+                    if (selectedCompanyTypes.length > 0 && lender.COMPANY_TYPE && lender.COMPANY_TYPE.trim() !== '') {
+                        const lenderTypes = lender.COMPANY_TYPE.split(', ').map(t => t.trim());
+                        const hasMatchingType = selectedCompanyTypes.some(selectedType => 
+                            lenderTypes.includes(selectedType)
+                        );
+                        if (!hasMatchingType) return false;
+                    }
+                    
+                    // Location filter
+                    if (selectedLocations.length > 0 && lender.LOCATION && lender.LOCATION.trim() !== '') {
+                        const lenderLocations = lender.LOCATION.split(', ').map(l => l.trim());
+                        const hasMatchingLocation = selectedLocations.some(selectedLocation => 
+                            lenderLocations.includes(selectedLocation)
+                        );
+                        if (!hasMatchingLocation) return false;
+                    }
+                    
+                    // PG requirement filter
+                    if (selectedPgRequirement) {
+                        const lenderPgReq = lender.PG_REQ ? lender.PG_REQ.toLowerCase() : '';
+                        if (selectedPgRequirement === 'yes' && lenderPgReq !== 'yes') return false;
+                        if (selectedPgRequirement === 'no' && lenderPgReq !== 'no') return false;
+                    }
+                    
+                    // Homeowner requirement filter
+                    if (selectedHomeownerRequirement) {
+                        const lenderHomeowner = lender.HOMEOWNER_STATUS ? lender.HOMEOWNER_STATUS.toLowerCase() : '';
+                        if (selectedHomeownerRequirement === 'yes' && lenderHomeowner !== 'yes') return false;
+                        if (selectedHomeownerRequirement === 'no' && lenderHomeowner !== 'no') return false;
+                    }
+
+                    return true;
+                });
+
+                renderResults();
+            } catch (error) {
+                console.error('Error in applyFilters:', error);
+            }
+        }
+
+        // Rendering Functions
+        function renderResults() {
+            updateResultsSummary();
+            renderTable();
+        }
+
+        function updateResultsSummary() {
+            if (domElements.headerResultsSummary) {
+                domElements.headerResultsSummary.textContent = `${filteredData.length} Results`;
+            }
+        }
+
+        function renderTable() {
+            try {
+                if (!domElements.resultsTableBody) return;
+                
+                if (filteredData.length === 0) {
+                    domElements.resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="no-results">
+                                <h3>No lenders match your criteria</h3>
+                                <p>Try adjusting your filters to see more results</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Sort filtered data alphabetically by lender name before rendering
+                const sortedData = [...filteredData].sort((a, b) => {
+                    const nameA = (a.LENDER || '').trim();
+                    const nameB = (b.LENDER || '').trim();
+                    return nameA.localeCompare(nameB);
+                });
+
+                domElements.resultsTableBody.innerHTML = sortedData.map(lender => {
+                    const amountRange = lender.MIN_LOAN_NUM > 0 || lender.MAX_LOAN_NUM > 0 ? 
+                        `${formatCurrency(lender.MIN_LOAN_NUM)} - ${formatCurrency(lender.MAX_LOAN_NUM)}` : 
+                        'Not specified';
+                    
+                    const termRange = lender.MIN_TERM > 0 || lender.MAX_TERM > 0 ? 
+                        `${lender.MIN_TERM} - ${lender.MAX_TERM} months` : 
+                        'Not specified';
+                    
+                    const productBadge = lender.PRODUCT_TYPE && lender.PRODUCT_TYPE.trim() !== '' ? 
+                        `<span class="product-badge">${escapeHtml(lender.PRODUCT_TYPE.trim())}</span>` :
+                        'Not specified';
+                    
+                    const submissionLink = lender.SUBMISSION && lender.SUBMISSION.trim() !== '' ? 
+                        (lender.SUBMISSION.includes('@') ? 
+                            `<a href="mailto:${escapeHtml(lender.SUBMISSION)}" class="submission-link">Email</a>` :
+                            `<a href="${escapeHtml(lender.SUBMISSION)}" target="_blank" class="submission-link">Portal</a>`) :
+                        'Not specified';
+                    
+                    // Panel indicators with new Mills Commercial Finance panel
+                    const panelIndicators = [];
+                    if (lender.MINT_FINANCE_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator mint-finance" title="Mint Finance Panel">MF</div>');
+                    }
+                    if (lender.ELITE_MONEY_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator elite-money" title="Elite Money Panel">EM</div>');
+                    }
+                    if (lender.MILLS_PANEL) {
+                        panelIndicators.push('<div class="panel-indicator mills-commercial" title="Mills Commercial Finance Panel">MC</div>');
+                    }
+                    const panelIndicatorsHtml = panelIndicators.length > 0 ? 
+                        `<div class="panel-indicators">${panelIndicators.join('')}</div>` : '';
+                    
+                    const criteriaItems = [];
+                    if (lender.MIN_TRADING_TIME > 0) criteriaItems.push(`Min Trading: ${lender.MIN_TRADING_TIME} months`);
+                    if (lender.MIN_TURNOVER > 0) criteriaItems.push(`Min Turnover: ${formatCurrency(lender.MIN_TURNOVER)}/month`);
+                    if (lender.LOCATION && lender.LOCATION.trim() !== '') {
+                        // Shorten location display to save space
+                        const shortLocation = lender.LOCATION
+                            .replace('England', 'Eng')
+                            .replace('Scotland', 'Scot')
+                            .replace('Wales', 'Wales')
+                            .replace('Northern Ireland', 'NI');
+                        criteriaItems.push(`Location: ${escapeHtml(shortLocation)}`);
+                    }
+                    if (lender.ADDITIONAL_CRITERIA && lender.ADDITIONAL_CRITERIA.trim() !== '') {
+                        criteriaItems.push(...lender.ADDITIONAL_CRITERIA.split(',').slice(0, 2).map(criteria => 
+                            escapeHtml(criteria.trim())
+                        ).filter(c => c.length > 0));
+                    }
+                    
+                    // Document items in specified order
+                    const documentItems = [];
+                    
+                    // 1. Open Banking
+                    if (lender.OPEN_BANKING && lender.OPEN_BANKING.trim() !== '' && lender.OPEN_BANKING.toLowerCase() !== 'no') {
+                        documentItems.push(`Open Banking: ${escapeHtml(lender.OPEN_BANKING)}`);
+                    }
+                    
+                    // 2. Bank Statements
+                    if (lender.BANK_STATEMENTS && lender.BANK_STATEMENTS.trim() !== '' && lender.BANK_STATEMENTS.toLowerCase() !== 'none') {
+                        documentItems.push(`Bank Statements: ${escapeHtml(lender.BANK_STATEMENTS)}`);
+                    }
+                    
+                    // 3. Filed Accounts
+                    if (lender.FILED_ACCOUNTS && lender.FILED_ACCOUNTS.trim() !== '' && lender.FILED_ACCOUNTS.toLowerCase() !== 'no') {
+                        documentItems.push(`Filed Accounts: ${escapeHtml(lender.FILED_ACCOUNTS)}`);
+                    }
+                    
+                    // 4. Management Accounts
+                    if (lender.MANAGEMENT_ACCOUNTS && lender.MANAGEMENT_ACCOUNTS.trim() !== '') {
+                        documentItems.push(`Management Accounts: ${escapeHtml(lender.MANAGEMENT_ACCOUNTS)}`);
+                    }
+                    
+                    // 5. Aged Debtor
+                    if (lender.AGED_DEBTOR && lender.AGED_DEBTOR.trim() !== '') {
+                        documentItems.push(`Aged Debtor: ${escapeHtml(lender.AGED_DEBTOR)}`);
+                    }
+                    
+                    // 6. Aged Creditor
+                    if (lender.AGED_CREDITOR && lender.AGED_CREDITOR.trim() !== '') {
+                        documentItems.push(`Aged Creditor: ${escapeHtml(lender.AGED_CREDITOR)}`);
+                    }
+                    
+                    // 7. Other Documents
+                    if (lender.OTHER_DOCUMENTS && lender.OTHER_DOCUMENTS.trim() !== '') {
+                        documentItems.push(`Other: ${escapeHtml(lender.OTHER_DOCUMENTS)}`);
+                    }
+                    
+                    const securityItems = [];
+                    if (lender.PG_REQ && lender.PG_REQ.trim() !== '') securityItems.push(`PG Required: ${escapeHtml(lender.PG_REQ)}`);
+                    if (lender.HOMEOWNER_STATUS && lender.HOMEOWNER_STATUS.trim() !== '') securityItems.push(`Homeowner: ${escapeHtml(lender.HOMEOWNER_STATUS)}`);
+                    
+                    const uspItems = lender.PRODUCT_USP && lender.PRODUCT_USP.trim() !== '' ? 
+                        lender.PRODUCT_USP.split(',').slice(0, 3).map(usp => 
+                            escapeHtml(usp.trim())
+                        ).filter(u => u.length > 0) : [];
+
+                    return `
+                        <tr>
+                            <td style="text-align: left;">
+                                <div class="lender-name">${escapeHtml(lender.LENDER)}</div>
+                                <div style="margin-top: 0.25rem; text-align: left;">
+                                    ${productBadge}
+                                </div>
+                                ${panelIndicatorsHtml}
+                                <div style="margin-top: 0.25rem; text-align: left;">
+                                    ${submissionLink}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="amount-range">
+                                    ${amountRange}
+                                </div>
+                                <div class="term-range" style="margin-top: 0.25rem;">
+                                    ${termRange}
+                                </div>
+                            </td>
+                            <td>
+                                ${securityItems.length > 0 ? 
+                                    `<ul class="security-list">${securityItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
+                                    'Not specified'}
+                            </td>
+                            <td>
+                                ${criteriaItems.length > 0 ? 
+                                    `<ul class="criteria-list">${criteriaItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
+                                    'Not specified'}
+                            </td>
+                            <td>
+                                ${documentItems.length > 0 ? 
+                                    `<ul class="documents-list">${documentItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
+                                    'Not specified'}
+                            </td>
+                            <td>
+                                ${uspItems.length > 0 ? 
+                                    `<ul class="usp-list">${uspItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
+                                    'Not specified'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error in renderTable:', error);
+                if (domElements.resultsTableBody) {
+                    domElements.resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="no-results">
+                                <h3>Error displaying results</h3>
+                                <p>Please try refreshing the page</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        // Optional: Add a manual refresh function for updates
+        function refreshLenderData() {
+            console.log('Refreshing lender data...');
+            loadLenderDataFromCSV();
+        }
+    </script>
+</body>
+</html>
