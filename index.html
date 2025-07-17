@@ -330,7 +330,7 @@
 
         th:nth-child(1), td:nth-child(1) { width: 14%; }  /* Lender */
         th:nth-child(2), td:nth-child(2) { width: 11%; }  /* Funding */
-        th:nth-child(3), td:nth-child(3) { width: 10.5%; }  /* Security */
+        th:nth-child(3), td:nth-child(3) { width: 10.5%; }  /* Security Required */
         th:nth-child(4), td:nth-child(4) { width: 21.5%; }  /* Key Criteria */
         th:nth-child(5), td:nth-child(5) { width: 21.5%; }  /* Key Documents */
         th:nth-child(6), td:nth-child(6) { width: 21.5%; }  /* Product USP */
@@ -413,17 +413,17 @@
             font-weight: 600;
         }
 
-        .criteria-list, .documents-list, .security-list, .usp-list {
+        .criteria-list, .documents-list, .security-required-list, .usp-list {
             list-style: none;
             padding: 0;
         }
 
-        .criteria-list li, .documents-list li, .security-list li, .usp-list li {
+        .criteria-list li, .documents-list li, .security-required-list li, .usp-list li {
             padding: 0.125rem 0;
             font-size: 0.85rem;
         }
 
-        .criteria-list li:before, .documents-list li:before, .security-list li:before, .usp-list li:before {
+        .criteria-list li:before, .documents-list li:before, .security-required-list li:before, .usp-list li:before {
             content: "• ";
             color: #172c40;
             font-weight: bold;
@@ -593,7 +593,7 @@
                     <tr>
                         <th>Lender</th>
                         <th>Funding</th>
-                        <th>Security</th>
+                        <th>Security Required</th>
                         <th>Key Criteria</th>
                         <th>Key Documents</th>
                         <th>Product USP</th>
@@ -676,7 +676,7 @@
                 }
                 
                 // Boolean field validation
-                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'PG Required', 'Mint Finance Panel', 'Elite Money Panel'];
+                const booleanFields = ['Homeowner Required', 'Existing Lending Required', 'PG Required', 'Debenture Required', 'Mint Finance Panel', 'Elite Money Panel'];
                 booleanFields.forEach(field => {
                     const value = row[field];
                     if (value && !['Yes', 'No', 'TRUE', 'FALSE', true, false, ''].includes(value)) {
@@ -810,6 +810,8 @@
                         HOMEOWNER_STATUS: (row['Homeowner Required'] || '').toString().trim(),
                         EXISTING_LENDING: (row['Existing Lending Required'] || '').toString().trim(),
                         PG_REQ: (row['PG Required'] || '').toString().trim(),
+                        DEBENTURE_REQ: (row['Debenture Required'] || '').toString().trim(),
+                        OTHER_SECURITY: (row['Other Security'] || '').toString().trim(),
                         OPEN_BANKING: (row['Open Banking'] || '').toString().trim(),
                         BANK_STATEMENTS: (row['Bank Statements'] || '').toString().trim(),
                         FILED_ACCOUNTS: (row['Filed Accounts'] || '').toString().trim(),
@@ -1446,7 +1448,9 @@
                     
                     const securityItems = [];
                     if (lender.PG_REQ && lender.PG_REQ.trim() !== '') securityItems.push(`PG Required: ${escapeHtml(lender.PG_REQ)}`);
-                    if (lender.HOMEOWNER_STATUS && lender.HOMEOWNER_STATUS.trim() !== '') securityItems.push(`Homeowner: ${escapeHtml(lender.HOMEOWNER_STATUS)}`);
+                    if (lender.HOMEOWNER_STATUS && lender.HOMEOWNER_STATUS.trim() !== '') securityItems.push(`Homeowner Required: ${escapeHtml(lender.HOMEOWNER_STATUS)}`);
+                    if (lender.DEBENTURE_REQ && lender.DEBENTURE_REQ.trim() !== '') securityItems.push(`Debenture Required: ${escapeHtml(lender.DEBENTURE_REQ)}`);
+                    if (lender.OTHER_SECURITY && lender.OTHER_SECURITY.trim() !== '') securityItems.push(`Other Security: ${escapeHtml(lender.OTHER_SECURITY)}`);
                     
                     const uspItems = lender.PRODUCT_USP && lender.PRODUCT_USP.trim() !== '' ? 
                         lender.PRODUCT_USP.split(',').slice(0, 3).map(usp => 
@@ -1475,7 +1479,7 @@
                             </td>
                             <td>
                                 ${securityItems.length > 0 ? 
-                                    `<ul class="security-list">${securityItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
+                                    `<ul class="security-required-list">${securityItems.map(item => `<li>${item}</li>`).join('')}</ul>` : 
                                     'Not specified'}
                             </td>
                             <td>
